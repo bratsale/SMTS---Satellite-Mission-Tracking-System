@@ -1,0 +1,1 @@
+CREATE DATABASE smts_baza;
