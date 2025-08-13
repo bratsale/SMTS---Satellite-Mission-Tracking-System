@@ -14,6 +14,8 @@ JOIN Raketa_Nosac AS rn ON l.raketa_id = rn.raketa_id
 JOIN Misija AS m ON l.misija_id = m.misija_id
 JOIN Mjesto_Lansiranja AS ml ON l.mjesto_id = ml.mjesto_id;
 
+SELECT * FROM Detalji_Lansiranja;
+
 -- Pogled za prikaz zemalja i operatera ukljucenih u pojedinu misiju
 CREATE OR REPLACE VIEW Misije_Detalji_Partnera AS
 SELECT
@@ -57,8 +59,6 @@ FROM Komunikacija AS k
 JOIN Zemaljska_Stanica AS zs ON k.stanica_id = zs.stanica_id
 JOIN Satelit AS s ON k.satelit_id = s.satelit_id;
 
-SELECT * FROM Komunikacija_Stanica_Satelit;
-
 -- Pogled koji nam pruza statistiku o broju lansiranja nekog proizvodjaca raketa nosaca
 CREATE OR REPLACE VIEW Lansiranja_Po_Proizvodjacu AS
 SELECT
@@ -85,3 +85,88 @@ SELECT
 FROM Misija AS m;
 
 SELECT * FROM Misije_Po_Statusu;
+
+-- Ovo su pogledi za sad
+
+-- Procedura koja unosi podatke u dvije tabele (Satelit i Lansiranje) unutar jedne transakcije
+DELIMITER $$
+
+CREATE PROCEDURE KreirajNovoLansiranje (
+    -- Parametri za unos novog satelita
+    IN p_naziv_satelita VARCHAR(255),
+    IN p_zemlja_proizvodnje VARCHAR(100),
+    IN p_masa_kg DECIMAL(10, 2),
+    IN p_misija_id INT,
+    IN p_tip_id INT,
+
+    -- Parametri za unos novog lansiranja
+    IN p_vrijeme_lansiranja DATETIME,
+    IN p_raketa_id INT,
+    IN p_mjesto_id INT
+)
+BEGIN
+    DECLARE v_satelit_id INT;
+
+    -- Pokretanje transakcije
+    START TRANSACTION;
+
+    -- Pokusaj unosa novog satelita
+    INSERT INTO Satelit (naziv, zemlja_proizvodnje, masa_kg, misija_id, tip_id)
+    VALUES (p_naziv_satelita, p_zemlja_proizvodnje, p_masa_kg, p_misija_id, p_tip_id);
+
+    -- Dohvatanje id-a upravo unesenog satelita
+    SET v_satelit_id = LAST_INSERT_ID();
+
+    -- Pokusaj unosa novog lansiranja, koristeci id satelita koji smo dobili
+    INSERT INTO Lansiranje (vrijeme_lansiranja, raketa_id, misija_id, satelit_id, mjesto_id)
+    VALUES (p_vrijeme_lansiranja, p_raketa_id, p_misija_id, v_satelit_id, p_mjesto_id);
+
+    -- Ako nema gresaka, potvrdi promjene
+    COMMIT;
+
+END $$
+
+DELIMITER ;
+
+CALL KreirajNovoLansiranje(
+    'Satelit-5',      -- p_naziv_satelita
+    'Evropska unija', -- p_zemlja_proizvodnje
+    4500.00,          -- p_masa_kg
+    1,                -- p_misija_id (npr. Artemis 1)
+    1,                -- p_tip_id (npr. Komunikacijski)
+    '2025-10-26 12:00:00', -- p_vrijeme_lansiranja
+    4,                -- p_raketa_id (npr. Ariane 5)
+    4                 -- p_mjesto_id (npr. Kourou)
+);
+
+SELECT * FROM Satelit;
+SELECT * FROM Lansiranje;
+SELECT * FROM Detalji_Lansiranja;
+
+-- Trigger za azuriranje broja satelita u misiji
+DELIMITER $$
+
+CREATE TRIGGER AfterInsertSatelit
+AFTER INSERT ON Satelit
+FOR EACH ROW
+BEGIN
+    UPDATE Misija
+    SET broj_satelita = broj_satelita + 1
+    WHERE misija_id = NEW.misija_id;
+END $$
+
+DELIMITER ;
+
+SELECT * FROM Misija; -- Test
+
+-- Unos novog satelita u misiju 'Starlink 1' (misija_id = 3)
+CALL KreirajNovoLansiranje(
+    'Starlink-100',      -- p_naziv_satelita
+    'SAD',              -- p_zemlja_proizvodnje
+    260.00,             -- p_masa_kg
+    3,                  -- p_misija_id
+    1,                  -- p_tip_id
+    '2026-01-15 10:00:00', -- p_vrijeme_lansiranja
+    1,                  -- p_raketa_id
+    1                   -- p_mjesto_id
+);

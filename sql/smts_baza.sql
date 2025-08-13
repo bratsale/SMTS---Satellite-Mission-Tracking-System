@@ -125,3 +125,9 @@ CREATE TABLE Ucestvovanje (
     FOREIGN KEY (operater_id) REFERENCES Operater(operater_id),
     FOREIGN KEY (uloga_id) REFERENCES Uloga_Operatera(uloga_id)
 );
+
+ALTER TABLE Misija
+ADD COLUMN broj_satelita INT DEFAULT 0; -- Za potrebe triggera
+
+UPDATE Misija m
+SET broj_satelita = (SELECT COUNT(*) FROM Satelit s WHERE s.misija_id = m.misija_id); -- Azuriramo broj satelita u ostalim misijama
