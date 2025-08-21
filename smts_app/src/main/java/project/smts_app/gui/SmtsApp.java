@@ -2,6 +2,7 @@ package project.smts_app.gui;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
@@ -10,20 +11,24 @@ public class SmtsApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Učitavanje FXML fajla
-        FXMLLoader fxmlLoader = new FXMLLoader(SmtsApp.class.getResource("/smts-view.fxml"));
+        try {
+            // Ispravna putanja do FXML fajla, bazirana na tvojoj strukturi
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/project/smts_app/smts-view.fxml"));
 
-        // Kreiranje scene iz FXML fajla
-        Scene scene = new Scene(fxmlLoader.load(), 640, 480);
+            Parent root = fxmlLoader.load();
+            SmtsController controller = fxmlLoader.getController();
 
-        // Postavljanje naslova prozora
-        stage.setTitle("SMTS - Aplikacija za lansiranja");
+            // Prikazujemo početni meni pri pokretanju
+            controller.showMainMenu();
 
-        // Postavljanje scene na stage (prozor)
-        stage.setScene(scene);
-
-        // Prikazivanje prozora
-        stage.show();
+            Scene scene = new Scene(root, 800, 600);
+            stage.setTitle("SMTS - Aplikacija za lansiranja");
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            System.err.println("Greška prilikom učitavanja FXML fajla: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

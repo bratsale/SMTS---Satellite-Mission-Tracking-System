@@ -1,14 +1,19 @@
 package project.smts_app.gui;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import project.smts_app.db.dao.LansiranjeDAO;
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class SmtsController {
 
-    // GUI elementi iz smts-view.fxml
+
+    // GUI elementi za formu (samo za dio Kreiraj Lansiranje)
     @FXML
     private TextField nazivSatelitaField;
     @FXML
@@ -20,7 +25,7 @@ public class SmtsController {
     @FXML
     private TextField tipIdField;
     @FXML
-    private TextField vrijemeLansiranjaField; // Za sada, String. Kasnije ga parsiramo.
+    private TextField vrijemeLansiranjaField;
     @FXML
     private TextField raketaIdField;
     @FXML
@@ -28,16 +33,52 @@ public class SmtsController {
     @FXML
     private Label porukaLabel;
 
-    // Instanca DAO klase za pozivanje logike
+    // Instanca DAO klase
     private LansiranjeDAO lansiranjeDAO = new LansiranjeDAO();
 
+    @FXML
+    private VBox mainContentPane;
+
+    // ... (ostali GUI elementi i DAO su isti) ...
+
+    @FXML
+    protected void showDetaljiLansiranja() {
+        // Učitaj pregled tabele
+        // loadView("detalji-lansiranja-view.fxml");
+    }
+
+    @FXML
+    protected void showKreirajLansiranje() {
+        loadView("/project/smts_app/kreiraj-lansiranje-view.fxml");
+    }
+
+    @FXML
+    protected void showMainMenu() {
+        loadView("/project/smts_app/main-menu-content.fxml");
+    }
+
+    // Ključna metoda za dinamičko učitavanje sadržaja
+    private void loadView(String fxmlFileName) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFileName));
+            // Reci FXMLLoader-u da koristi postojeći kontroler
+            fxmlLoader.setController(this);
+
+            Parent newContent = fxmlLoader.load();
+            mainContentPane.getChildren().setAll(newContent.getChildrenUnmodifiable());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+// ... (ostatak koda je isti)
+
     /**
-     * Metoda koja se poziva klikom na dugme "Kreiraj lansiranje".
+     * Metoda koja se poziva klikom na dugme "Kreiraj lansiranje" unutar forme.
      */
     @FXML
     protected void onKreirajLansiranjeClick() {
         try {
-            // Dohvatanje podataka iz GUI elemenata
             String nazivSatelita = nazivSatelitaField.getText();
             String zemljaProizvodnje = zemljaProizvodnjeField.getText();
             double masaKg = Double.parseDouble(masaKgField.getText());
@@ -47,13 +88,11 @@ public class SmtsController {
             int raketaId = Integer.parseInt(raketaIdField.getText());
             int mjestoId = Integer.parseInt(mjestoIdField.getText());
 
-            // Pozivanje DAO metode s unesenim podacima
             lansiranjeDAO.kreirajNovoLansiranje(
                     nazivSatelita, zemljaProizvodnje, masaKg, misijaId, tipId,
                     vrijemeLansiranja, raketaId, mjestoId
             );
 
-            // Ažuriranje poruke za korisnika
             porukaLabel.setText("Uspješno kreirano novo lansiranje!");
             porukaLabel.setStyle("-fx-text-fill: green;");
 

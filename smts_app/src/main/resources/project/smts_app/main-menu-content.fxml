@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<?import javafx.scene.control.Label?>
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      alignment="CENTER" spacing="10.0">
+    <children>
+        <Label text="Izaberite opciju" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+        <Button text="Kreiraj Lansiranje" onAction="#showKreirajLansiranje" prefWidth="200.0"/>
+        <Button text="Pregled Detalja Lansiranja" onAction="#showDetaljiLansiranja" prefWidth="200.0"/>
+    </children>
+</VBox>
