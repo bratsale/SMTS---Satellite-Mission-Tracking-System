@@ -86,6 +86,27 @@ FROM Misija AS m;
 
 SELECT * FROM Misije_Po_Statusu;
 
+-- Pogled koji pruza sveobuhvatne informacije o svakom satelitu
+CREATE OR REPLACE VIEW Svi_Sateliti_Detalji AS
+SELECT
+    s.satelit_id,
+    s.naziv AS naziv_satelita,
+    s.zemlja_proizvodnje,
+    s.masa_kg,
+    ts.naziv_tipa AS tip_satelita,
+    m.naziv AS naziv_misije,
+    l.vrijeme_lansiranja,
+    rn.naziv AS raketa_nosac,
+    ml.naziv AS mjesto_lansiranja
+FROM Satelit AS s
+JOIN Tip_Satelita AS ts ON s.tip_id = ts.tip_id
+JOIN Misija AS m ON s.misija_id = m.misija_id
+JOIN Lansiranje AS l ON s.satelit_id = l.satelit_id
+JOIN Raketa_Nosac AS rn ON l.raketa_id = rn.raketa_id
+JOIN Mjesto_Lansiranja AS ml ON l.mjesto_id = ml.mjesto_id;
+
+SELECT * FROM Svi_Sateliti_Detalji;
+
 -- Ovo su pogledi za sad
 
 -- Procedura koja unosi podatke u dvije tabele (Satelit i Lansiranje) unutar jedne transakcije
@@ -121,7 +142,6 @@ BEGIN
     INSERT INTO Lansiranje (vrijeme_lansiranja, raketa_id, misija_id, satelit_id, mjesto_id)
     VALUES (p_vrijeme_lansiranja, p_raketa_id, p_misija_id, v_satelit_id, p_mjesto_id);
 
-    -- Ako nema gresaka, potvrdi promjene
     COMMIT;
 
 END $$

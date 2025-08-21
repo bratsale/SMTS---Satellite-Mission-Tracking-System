@@ -9,13 +9,15 @@ public class DetaljiLansiranja {
     private String raketaNosac;
     private String misija;
     private String mjestoLansiranja;
+    private int lansiranjeId;
 
-    public DetaljiLansiranja(String satelit, LocalDateTime vrijemeLansiranja, String raketaNosac, String misija, String mjestoLansiranja) {
+    public DetaljiLansiranja(String satelit, LocalDateTime vrijemeLansiranja, String raketaNosac, String misija, String mjestoLansiranja, int lansiranjeId) {
         this.satelit = satelit;
         this.vrijemeLansiranja = vrijemeLansiranja;
         this.raketaNosac = raketaNosac;
         this.misija = misija;
         this.mjestoLansiranja = mjestoLansiranja;
+        this.lansiranjeId = lansiranjeId;
     }
 
     // Getteri za sve atribute
@@ -38,5 +40,9 @@ public class DetaljiLansiranja {
 
     public String getMjestoLansiranja() {
         return mjestoLansiranja;
+    }
+
+    public int getLansiranjeId() {
+        return lansiranjeId;
     }
 }

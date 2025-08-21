@@ -9,7 +9,11 @@
       alignment="CENTER" spacing="10.0">
     <children>
         <Label text="Izaberite opciju" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-        <Button text="Kreiraj Lansiranje" onAction="#showKreirajLansiranje" prefWidth="200.0"/>
-        <Button text="Pregled Detalja Lansiranja" onAction="#showDetaljiLansiranja" prefWidth="200.0"/>
+        <Button text="Kreiraj Lansiranje" onAction="#showKreirajLansiranje" prefWidth="300.0"/>
+        <Button text="Pregled Detalja Lansiranja" onAction="#showDetaljiLansiranja" prefWidth="300.0"/>
+        <Button text="Pregled Trenutnih Orbita Satelita" onAction="#showSatelitiOrbite" prefWidth="300.0"/>
+        <Button text="Pregled Detalja o Satelitima" onAction="#showSviSatelitiDetalji" prefWidth="300.0"/>
+        <Button text="Pregled Partnera misija" onAction="#showMisijePartneri" prefWidth="300.0"/>
+        <Button text="Pregled Komunikacija Stanica i Satelita" onAction="#showKomunikacija" prefWidth="300.0"/>
     </children>
 </VBox>
