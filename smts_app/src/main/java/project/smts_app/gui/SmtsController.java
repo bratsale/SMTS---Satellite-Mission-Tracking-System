@@ -17,7 +17,17 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.TableView;
+import javafx.scene.chart.PieChart;
+import java.util.stream.Collectors;
 
 public class SmtsController implements Initializable {
 
@@ -42,6 +52,8 @@ public class SmtsController implements Initializable {
     @FXML
     private Label porukaLabel;
     @FXML
+    private TextField filterField;
+    @FXML
     private TableView<SatelitOrbita> satelitiOrbiteTable;
     @FXML
     private TableView<SatelitDetalji> sviSatelitiDetaljiTable;
@@ -49,25 +61,34 @@ public class SmtsController implements Initializable {
     private TableView<MisijaPartner> misijePartneriTable;
     @FXML
     private TableView<KomunikacijaStanicaSatelit> komunikacijaTable;
+    @FXML
+    private TableView<LansiranjeProizvodjac> lansiranjaProizvodjacTable;
+    @FXML
+    private BarChart<String, Number> proizvodjacChart;
+    @FXML
+    private TableView<MisijaStatus> misijeStatusTable;
+    @FXML
+    private PieChart misijeStatusChart;
 
     // Instanca DAO klase
     private LansiranjeDAO lansiranjeDAO = new LansiranjeDAO();
     private MisijaDAO misijaDAO = new MisijaDAO();
     private KomunikacijaDAO komunikacijaDAO = new KomunikacijaDAO();
+    private FilteredList<DetaljiLansiranja> filteredData;
+    private ObservableList<DetaljiLansiranja> masterData = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Ova metoda se poziva nakon što su svi @FXML elementi učitani.
-        // Ovdje postaviš `CellValueFactory` za kolone.
-        // Nemaš ih u svom kodu, ali je dobra praksa dodati ih ovdje.
-        // Na primjer:
-        // satelitColumn.setCellValueFactory(new PropertyValueFactory<>("satelit"));
-
-        // Provjeri da li je `detaljiLansiranjaTable` inicijalizovana
+        // Provjeri da li je glavna tabela inicijalizovana
         if (detaljiLansiranjaTable != null) {
             popuniTabeluLansiranja();
         }
+        // Provjeri da li je filterField inicijalizovano
+        if (filterField != null && detaljiLansiranjaTable != null) {
+            setupSearchFilter();
+        }
     }
+
 
     @FXML
     private VBox mainContentPane;
@@ -90,18 +111,6 @@ public class SmtsController implements Initializable {
     protected void showDetaljiLansiranja() {
         loadView("/project/smts_app/detalji-lansiranja.fxml");
         // Popuni tabelu s podacima
-    }
-
-    // Ključna metoda za popunjavanje tabele
-    private void popuniTabeluLansiranja() {
-        try {
-            // Dohvati podatke iz DAO klase
-            List<DetaljiLansiranja> lansiranjaList = lansiranjeDAO.dohvatiSveDetaljeLansiranja();
-            ObservableList<DetaljiLansiranja> data = FXCollections.observableArrayList(lansiranjaList);
-            detaljiLansiranjaTable.setItems(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     // Ključna metoda za dinamičko učitavanje sadržaja
@@ -232,6 +241,126 @@ public class SmtsController implements Initializable {
             List<KomunikacijaStanicaSatelit> komunikacijeList = komunikacijaDAO.dohvatiDetaljeKomunikacije();
             ObservableList<KomunikacijaStanicaSatelit> data = FXCollections.observableArrayList(komunikacijeList);
             komunikacijaTable.setItems(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void popuniTabeluLansiranja() {
+        try {
+            List<DetaljiLansiranja> lansiranjaList = lansiranjeDAO.dohvatiSveDetaljeLansiranja();
+            masterData.clear();
+            masterData.addAll(lansiranjaList);
+            detaljiLansiranjaTable.setItems(masterData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupSearchFilter() {
+        // Omotaj "masterData" u "FilteredList" (inicijalno prikazuje sve podatke).
+        filteredData = new FilteredList<>(masterData, p -> true);
+
+        // Dodaj Listener koji će pratiti promjene u tekstualnom polju za pretragu.
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(detaljiLansiranja -> {
+                // Ako je polje za pretragu prazno, prikaži sve podatke.
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                // Uporedi pojam za pretragu s podacima u kolonama (case-insensitive).
+                String lowerCaseFilter = newValue.toLowerCase();
+
+                if (detaljiLansiranja.getSatelit().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Match found in satelit.
+                } else if (detaljiLansiranja.getRaketaNosac().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Match found in raketa_nosac.
+                } else if (detaljiLansiranja.getMisija().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Match found in misija.
+                }
+                return false; // No match found.
+            });
+        });
+
+        // Omotaj filtriranu listu u SortedList (za sortiranje).
+        SortedList<DetaljiLansiranja> sortedData = new SortedList<>(filteredData);
+
+        // Poveži SortedList komparator s komparatorom TableView-a.
+        sortedData.comparatorProperty().bind(detaljiLansiranjaTable.comparatorProperty());
+
+        // Postavi SortedList kao izvor podataka za TableView.
+        detaljiLansiranjaTable.setItems(sortedData);
+    }
+
+    @FXML
+    protected void showLansiranjaPoProizvodjacu() {
+        loadView("/project/smts_app/lansiranja-po-proizvodjacu.fxml");
+        popuniTabeluLansiranjaPoProizvodjacu();
+        popuniGrafikonProizvodjaca();
+    }
+
+    private void popuniTabeluLansiranjaPoProizvodjacu() {
+        try {
+            List<LansiranjeProizvodjac> lista = lansiranjeDAO.dohvatiLansiranjaPoProizvodjacu();
+            ObservableList<LansiranjeProizvodjac> data = FXCollections.observableArrayList(lista);
+            lansiranjaProizvodjacTable.setItems(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void popuniGrafikonProizvodjaca() {
+        try {
+            List<LansiranjeProizvodjac> lista = lansiranjeDAO.dohvatiLansiranjaPoProizvodjacu();
+
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName("Broj lansiranja");
+
+            for (LansiranjeProizvodjac lp : lista) {
+                series.getData().add(new XYChart.Data<>(lp.getProizvodjac(), lp.getBrojLansiranja()));
+            }
+
+            proizvodjacChart.getData().clear();
+            proizvodjacChart.getData().add(series);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    protected void showMisijePoStatusu() {
+        loadView("/project/smts_app/misije-po-statusu.fxml");
+        popuniTabeluMisijeStatusa();
+        popuniGrafikonMisijeStatusa();
+    }
+
+    private void popuniTabeluMisijeStatusa() {
+        try {
+            List<MisijaStatus> lista = misijaDAO.dohvatiMisijePoStatusu();
+            ObservableList<MisijaStatus> data = FXCollections.observableArrayList(lista);
+            misijeStatusTable.setItems(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void popuniGrafikonMisijeStatusa() {
+        try {
+            List<MisijaStatus> lista = misijaDAO.dohvatiMisijePoStatusu();
+
+            // Grupiraj misije po statusu i broji ih
+            Map<String, Long> statusCount = lista.stream()
+                    .collect(Collectors.groupingBy(MisijaStatus::getStatus, Collectors.counting()));
+
+            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+
+            // Kreiraj podatke za grafikon
+            for (Map.Entry<String, Long> entry : statusCount.entrySet()) {
+                pieChartData.add(new PieChart.Data(entry.getKey() + " (" + entry.getValue() + ")", entry.getValue()));
+            }
+
+            misijeStatusChart.setData(pieChartData);
         } catch (Exception e) {
             e.printStackTrace();
         }

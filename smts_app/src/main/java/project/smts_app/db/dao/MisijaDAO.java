@@ -3,6 +3,7 @@ package project.smts_app.db.dao;
 
 import project.smts_app.util.SmtsConnection;
 import project.smts_app.db.obj.MisijaPartner;
+import project.smts_app.db.obj.MisijaStatus;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +34,27 @@ public class MisijaDAO {
                 String ulogaOperatera = rs.getString("uloga_operatera");
 
                 MisijaPartner misija = new MisijaPartner(nazivMisije, statusMisije, zemlja, operater, ulogaOperatera);
+                listaMisija.add(misija);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listaMisija;
+    }
+
+    public List<MisijaStatus> dohvatiMisijePoStatusu() {
+        List<MisijaStatus> listaMisija = new ArrayList<>();
+        String query = "SELECT naziv_misije, status FROM Misije_Po_Statusu";
+
+        try (Connection conn = SmtsConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String nazivMisije = rs.getString("naziv_misije");
+                String status = rs.getString("status");
+
+                MisijaStatus misija = new MisijaStatus(nazivMisije, status);
                 listaMisija.add(misija);
             }
         } catch (SQLException e) {

@@ -185,4 +185,26 @@ public class LansiranjeDAO {
         }
         return listaSatelita;
     }
+
+    public List<LansiranjeProizvodjac> dohvatiLansiranjaPoProizvodjacu() {
+        List<LansiranjeProizvodjac> listaLansiranja = new ArrayList<>();
+        String query = "SELECT * FROM Lansiranja_Po_Proizvodjacu";
+
+        try (Connection conn = SmtsConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String proizvodjac = rs.getString("proizvodjac");
+                String raketaNosac = rs.getString("raketa_nosac");
+                int brojLansiranja = rs.getInt("broj_lansiranja");
+
+                LansiranjeProizvodjac lansiranje = new LansiranjeProizvodjac(proizvodjac, raketaNosac, brojLansiranja);
+                listaLansiranja.add(lansiranje);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listaLansiranja;
+    }
 }

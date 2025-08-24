@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      alignment="TOP_CENTER" spacing="10.0">
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+    </padding>
+    <children>
+        <Label text="Lansiranja po proizvođaču" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+        <TableView fx:id="lansiranjaProizvodjacTable" VBox.vgrow="SOMETIMES">
+            <columns>
+                <TableColumn text="Proizvođač" prefWidth="150">
+                    <cellValueFactory><PropertyValueFactory property="proizvodjac" /></cellValueFactory>
+                </TableColumn>
+                <TableColumn text="Raketa" prefWidth="150">
+                    <cellValueFactory><PropertyValueFactory property="raketaNosac" /></cellValueFactory>
+                </TableColumn>
+                <TableColumn text="Broj lansiranja" prefWidth="120">
+                    <cellValueFactory><PropertyValueFactory property="brojLansiranja" /></cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+
+        <BarChart fx:id="proizvodjacChart" VBox.vgrow="SOMETIMES" title="Broj lansiranja po proizvođaču">
+            <xAxis><CategoryAxis label="Proizvođač" /></xAxis>
+            <yAxis><NumberAxis label="Broj lansiranja" /></yAxis>
+        </BarChart>
+
+        <Button onAction="#showMainMenu" text="Nazad"/>
+    </children>
+</VBox>
