@@ -1,39 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.HBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      alignment="TOP_CENTER" spacing="10.0">
-    <children>
-        <Label text="Kreiranje novog lansiranja i satelita" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-        <GridPane hgap="10.0" vgap="10.0">
-            <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-            </columnConstraints>
-            <Label text="Naziv satelita:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="nazivSatelitaField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-            <Label text="Zemlja proizvodnje:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextField fx:id="zemljaProizvodnjeField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-            <Label text="Masa (kg):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <TextField fx:id="masaKgField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-            <Label text="ID misije:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <TextField fx:id="misijaIdField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-            <Label text="ID tipa:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <TextField fx:id="tipIdField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-            <Label text="Vrijeme lansiranja (YYYY-MM-DDTHH:mm:ss):" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <TextField fx:id="vrijemeLansiranjaField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-            <Label text="ID rakete:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-            <TextField fx:id="raketaIdField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-            <Label text="ID mjesta:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-            <TextField fx:id="mjestoIdField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
-            <Label fx:id="porukaLabel" text="" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
-        </GridPane>
-        <HBox alignment="CENTER" spacing="10.0">
-            <Button onAction="#onKreirajLansiranjeClick" text="Kreiraj lansiranje"/>
-            <Button onAction="#showMainMenu" text="Nazad"/>
-        </HBox>
-    </children>
-</VBox>
+<GridPane
+          xmlns:fx="http://javafx.com/fxml/1" alignment="CENTER" hgap="10" vgap="10">
+    <padding>
+        <Insets top="25" right="25" bottom="25" left="25"/>
+    </padding>
+
+    <Label text="Kreiranje novog lansiranja i satelita" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <Label text="Naziv satelita:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="satelitNazivField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+    <Label text="Zemlja proizvodnje:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+    <TextField fx:id="zemljaProizvodnjeField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+    <Label text="Masa (kg):" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <TextField fx:id="masaKgField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+    <Label text="Misija:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+    <ComboBox fx:id="misijaComboBox" promptText="Odaberi misiju" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+    <Label text="Tip satelita:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+    <ComboBox fx:id="tipComboBox" promptText="Odaberi tip" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+    <Label text="Datum i vrijeme lansiranja:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+    <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="6" alignment="CENTER">
+        <ComboBox fx:id="godinaComboBox" promptText="Godina"/>
+        <ComboBox fx:id="mjesecComboBox" promptText="Mjesec"/>
+        <ComboBox fx:id="danComboBox" promptText="Dan"/>
+        <ComboBox fx:id="satComboBox" promptText="Sat"/>
+        <ComboBox fx:id="minutComboBox" promptText="Minut"/>
+    </HBox>
+
+    <Label text="Raketa:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+    <ComboBox fx:id="raketaComboBox" promptText="Odaberi raketu" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+
+    <Label text="Mjesto lansiranja:" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+    <ComboBox fx:id="mjestoComboBox" promptText="Odaberi mjesto" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+
+    <Label fx:id="statusLabel" GridPane.columnIndex="0" GridPane.rowIndex="9" GridPane.columnSpan="2" style="-fx-text-fill: green;"/>
+
+    <HBox spacing="10" alignment="BOTTOM_RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="10">
+        <Button onAction="#kreirajLansiranje" text="Kreiraj lansiranje" />
+        <Button onAction="#showMainMenu" text="Nazad"/>
+    </HBox>
+</GridPane>

@@ -1,4 +1,4 @@
-package project.smts_app.db.dao; // Prilagodi package
+package project.smts_app.db.dao;
 
 import project.smts_app.db.obj.*;
 import project.smts_app.util.SmtsConnection;
@@ -12,25 +12,21 @@ public class LansiranjeDAO {
 
     public void kreirajNovoLansiranje(String nazivSatelita, String zemljaProizvodnje, double masaKg, int misijaId, int tipId, LocalDateTime vrijemeLansiranja, int raketaId, int mjestoId) throws SQLException {
 
-        // SQL sintaksa za pozivanje pohranjene procedure
         String sql = "{CALL KreirajNovoLansiranje(?, ?, ?, ?, ?, ?, ?, ?)}";
 
         try (Connection conn = SmtsConnection.getConnection();
              CallableStatement cstmt = conn.prepareCall(sql)) {
 
-            // Postavljanje parametara za satelit
             cstmt.setString(1, nazivSatelita);
             cstmt.setString(2, zemljaProizvodnje);
             cstmt.setDouble(3, masaKg);
             cstmt.setInt(4, misijaId);
             cstmt.setInt(5, tipId);
 
-            // Postavljanje parametara za lansiranje
             cstmt.setObject(6, vrijemeLansiranja);
             cstmt.setInt(7, raketaId);
             cstmt.setInt(8, mjestoId);
 
-            // Izvršavanje procedure
             cstmt.executeUpdate();
 
             System.out.println("Novo lansiranje i satelit uspješno dodani kroz DAO.");
@@ -38,7 +34,7 @@ public class LansiranjeDAO {
         } catch (SQLException e) {
             System.err.println("Greška prilikom kreiranja lansiranja: " + e.getMessage());
             e.printStackTrace();
-            throw e; // Proslijedi grešku dalje u aplikaciju
+            throw e;
         }
     }
 
@@ -68,7 +64,6 @@ public class LansiranjeDAO {
                 String misija = rs.getString("misija_naziv");
                 String mjestoLansiranja = rs.getString("mjesto_naziv");
 
-                // Proslijedi ID konstruktoru
                 DetaljiLansiranja detalji = new DetaljiLansiranja(satelit, vrijemeLansiranja, raketaNosac, misija, mjestoLansiranja, lansiranjeId);
                 listaLansiranja.add(detalji);
             }
@@ -84,19 +79,15 @@ public class LansiranjeDAO {
      * @param lansiranjeId ID lansiranja koje treba obrisati
      */
     public void obrisiLansiranje(int lansiranjeId) throws SQLException {
-        // Moras dohvatiti satelit_id iz tabele Lansiranje prije brisanja
         String getSatelitIdQuery = "SELECT satelit_id FROM Lansiranje WHERE lansiranje_id = ?";
-        // SQL upiti za brisanje
         String deleteLansiranjeQuery = "DELETE FROM Lansiranje WHERE lansiranje_id = ?";
         String deleteSatelitQuery = "DELETE FROM Satelit WHERE satelit_id = ?";
 
         int satelitId = -1;
 
         try (Connection conn = SmtsConnection.getConnection()) {
-            // Postavi transakciju na manualni commit
             conn.setAutoCommit(false);
 
-            // Dohvati satelit_id
             try (PreparedStatement ps = conn.prepareStatement(getSatelitIdQuery)) {
                 ps.setInt(1, lansiranjeId);
                 var rs = ps.executeQuery();
@@ -106,13 +97,11 @@ public class LansiranjeDAO {
             }
 
             if (satelitId != -1) {
-                // Obrisi lansiranje
                 try (PreparedStatement ps = conn.prepareStatement(deleteLansiranjeQuery)) {
                     ps.setInt(1, lansiranjeId);
                     ps.executeUpdate();
                 }
 
-                // Obrisi satelit
                 try (PreparedStatement ps = conn.prepareStatement(deleteSatelitQuery)) {
                     ps.setInt(1, satelitId);
                     ps.executeUpdate();
@@ -133,7 +122,6 @@ public class LansiranjeDAO {
         }
     }
 
-    // Dodaj metodu u postojecu LansiranjeDAO klasu
     public List<SatelitOrbita> dohvatiSveSateliteIOrbite() {
         List<SatelitOrbita> listaSatelita = new ArrayList<>();
         String query = "SELECT * FROM Sateliti_i_Orbite";

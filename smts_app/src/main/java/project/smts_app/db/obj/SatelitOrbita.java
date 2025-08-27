@@ -1,4 +1,3 @@
-// project.smts_app.db.obj/SatelitOrbita.java
 package project.smts_app.db.obj;
 
 import javafx.beans.property.SimpleDoubleProperty;
@@ -20,7 +19,6 @@ public class SatelitOrbita {
         this.inklinacijaOrbite = new SimpleDoubleProperty(inklinacijaOrbite);
     }
 
-    // Getteri za sve property-je
     public String getNazivSatelita() { return nazivSatelita.get(); }
     public SimpleStringProperty nazivSatelitaProperty() { return nazivSatelita; }
 
