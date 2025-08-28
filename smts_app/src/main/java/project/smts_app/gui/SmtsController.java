@@ -45,37 +45,6 @@ import javafx.scene.input.MouseButton;
 
 public class SmtsController implements Initializable {
 
-    // FXML varijable za Kreiraj Lansiranje
-    @FXML
-    private TextField satelitNazivField;
-    @FXML
-    private TextField zemljaProizvodnjeField;
-    @FXML
-    private TextField masaKgField;
-
-    // Promijenjeni ComboBox-ovi umjesto TextField-a
-    @FXML
-    private ComboBox<MisijaDetalji> misijaComboBox;
-    @FXML
-    private ComboBox<Satelit.Tip> tipComboBox; // Promijenjeno
-    @FXML
-    private ComboBox<RaketaNosac> raketaComboBox;
-    @FXML
-    private ComboBox<MjestoLansiranja> mjestoComboBox;
-
-    @FXML
-    private ComboBox<Integer> danComboBox;
-    @FXML
-    private ComboBox<Integer> mjesecComboBox;
-    @FXML
-    private ComboBox<Integer> godinaComboBox;
-    @FXML
-    private ComboBox<Integer> satComboBox;
-    @FXML
-    private ComboBox<Integer> minutComboBox;
-    @FXML
-    private Label statusLabel;
-
     // FXML varijable za ostale poglede
     @FXML
     private TextField filterField;
@@ -106,7 +75,7 @@ public class SmtsController implements Initializable {
     private KomunikacijaDAO komunikacijaDAO = new KomunikacijaDAO();
     private RaketaDAO raketaDAO = new RaketaDAO();
     private MjestoDAO mjestoDAO = new MjestoDAO();
-    private SatelitDAO satelitDAO = new SatelitDAO(); // Nova DAO instanca
+    private SatelitDAO satelitDAO = new SatelitDAO();
 
     // Liste za pretragu
     private FilteredList<DetaljiLansiranja> filteredData;
@@ -115,7 +84,6 @@ public class SmtsController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Provjeri je li tabela inicijalizirana (nalazi se u FXML-u)
         if (detaljiLansiranjaTable != null) {
             popuniTabeluLansiranja();
             setupDetaljiLansiranjaTableContextMenu();
@@ -124,63 +92,51 @@ public class SmtsController implements Initializable {
         if (filterField != null && detaljiLansiranjaTable != null) {
             setupSearchFilter();
         }
-
-        if (godinaComboBox != null) {
-            popuniDatumVrijemeDropdowns();
-            popuniComboBoxes();
-        }
     }
 
-    private void popuniComboBoxes() {
+    /**
+     * Genericka metoda za ucitavanje FXML-a i postavljanje kontrolera.
+     * @param fxmlFileName Naziv FXML datoteke.
+     */
+    private void loadView(String fxmlFileName) {
         try {
-            // Popunjavanje Misija ComboBox
-            List<MisijaDetalji> misije = misijaDAO.dohvatiSveMisije();
-            misijaComboBox.getItems().addAll(misije);
-
-            // Popunjavanje Tipa satelita pomoću SatelitDAO-a
-            List<Satelit.Tip> tipovi = satelitDAO.dohvatiSveTipoveSatelita();
-            tipComboBox.setItems(FXCollections.observableArrayList(tipovi));
-
-            // Popunjavanje Raketa ComboBox
-            List<RaketaNosac> rakete = raketaDAO.dohvatiSveRakete();
-            raketaComboBox.getItems().addAll(rakete);
-
-            // Popunjavanje Mjesto lansiranja ComboBox
-            List<MjestoLansiranja> mjesta = mjestoDAO.dohvatiSvaMjestaLansiranja();
-            mjestoComboBox.getItems().addAll(mjesta);
-
-        } catch (Exception e) {
-            statusLabel.setText("Greška pri dohvaćanju podataka iz baze.");
-            statusLabel.setStyle("-fx-text-fill: red;");
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFileName));
+            Parent newContent = fxmlLoader.load();
+            if (mainContentPane != null) {
+                mainContentPane.getChildren().setAll(newContent);
+            } else {
+                System.err.println("mainContentPane nije inicijalizovan.");
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void popuniDatumVrijemeDropdowns() {
-        // Popuni godine od 1950. do tekuće godine
-        int currentYear = Year.now().getValue();
-        godinaComboBox.getItems().addAll(IntStream.rangeClosed(1950, currentYear).boxed().collect(Collectors.toList()));
+    /**
+     * Metoda za ucitavanje FXML-a i prosljedjivanje reference na ovaj kontroler.
+     * @param fxmlFileName Naziv FXML datoteke.
+     */
+    private void loadViewWithController(String fxmlFileName) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFileName));
+            Parent newContent = fxmlLoader.load();
 
-        // Popuni mjesece
-        mjesecComboBox.getItems().addAll(IntStream.rangeClosed(1, 12).boxed().collect(Collectors.toList()));
+            Object controller = fxmlLoader.getController();
+            if (controller instanceof KreirajLansiranjeController) {
+                ((KreirajLansiranjeController) controller).setParentController(this);
+            } else if (controller instanceof SviSatelitiController) {
+                ((SviSatelitiController) controller).setParentController(this);
+            } else if (controller instanceof MisijeController) {
+                ((MisijeController) controller).setParentController(this);
+            }
 
-        // Popuni sate i minute
-        satComboBox.getItems().addAll(IntStream.rangeClosed(0, 23).boxed().collect(Collectors.toList()));
-        minutComboBox.getItems().addAll(IntStream.rangeClosed(0, 59).boxed().collect(Collectors.toList()));
-
-        // Dodaj listenere za dinamičko ažuriranje dana
-        mjesecComboBox.valueProperty().addListener((obs, oldVal, newVal) -> azurirajDane());
-        godinaComboBox.valueProperty().addListener((obs, oldVal, newVal) -> azurirajDane());
-    }
-
-    private void azurirajDane() {
-        danComboBox.getItems().clear();
-        Integer godina = godinaComboBox.getValue();
-        Integer mjesec = mjesecComboBox.getValue();
-
-        if (godina != null && mjesec != null) {
-            int brojDanaUMjesecu = java.time.YearMonth.of(godina, mjesec).lengthOfMonth();
-            danComboBox.getItems().addAll(IntStream.rangeClosed(1, brojDanaUMjesecu).boxed().collect(Collectors.toList()));
+            if (mainContentPane != null) {
+                mainContentPane.getChildren().setAll(newContent);
+            } else {
+                System.err.println("mainContentPane nije inicijalizovan.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -189,7 +145,7 @@ public class SmtsController implements Initializable {
     //
     @FXML
     protected void showKreirajLansiranje() {
-        loadView("/project/smts_app/kreiraj-lansiranje.fxml");
+        loadViewWithController("/project/smts_app/kreiraj-lansiranje.fxml");
     }
 
     @FXML
@@ -201,91 +157,6 @@ public class SmtsController implements Initializable {
     protected void showDetaljiLansiranja() {
         loadView("/project/smts_app/detalji-lansiranja.fxml");
     }
-
-    private void loadView(String fxmlFileName) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFileName));
-            fxmlLoader.setController(this);
-            Parent newContent = fxmlLoader.load();
-            mainContentPane.getChildren().setAll(newContent.getChildrenUnmodifiable());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Metoda koja se poziva klikom na dugme "Kreiraj lansiranje".
-     */
-    @FXML
-    protected void kreirajLansiranje() {
-        try {
-            if (satelitNazivField.getText().isEmpty() ||
-                    zemljaProizvodnjeField.getText().isEmpty() ||
-                    masaKgField.getText().isEmpty() ||
-                    misijaComboBox.getValue() == null ||
-                    tipComboBox.getValue() == null ||
-                    danComboBox.getValue() == null ||
-                    mjesecComboBox.getValue() == null ||
-                    godinaComboBox.getValue() == null ||
-                    satComboBox.getValue() == null ||
-                    minutComboBox.getValue() == null ||
-                    raketaComboBox.getValue() == null ||
-                    mjestoComboBox.getValue() == null) {
-
-                statusLabel.setText("Greška: Popunite sva polja!");
-                statusLabel.setStyle("-fx-text-fill: red;");
-                return;
-            }
-
-            String naziv = satelitNazivField.getText();
-            String zemlja = zemljaProizvodnjeField.getText();
-            double masa = Double.parseDouble(masaKgField.getText());
-
-            // Dohvatanje ID-jeva iz odabranih objekata
-            int misijaId = misijaComboBox.getValue().getMisijaId();
-            int tipId = tipComboBox.getValue().getTipId(); // Promijenjeno
-            int raketaId = raketaComboBox.getValue().getRaketaId();
-            int mjestoId = mjestoComboBox.getValue().getMjestoId();
-
-            // Kreiranje LocalDateTime objekta iz ComboBox-ova
-            LocalDate datum = LocalDate.of(godinaComboBox.getValue(), mjesecComboBox.getValue(), danComboBox.getValue());
-            LocalTime vrijeme = LocalTime.of(satComboBox.getValue(), minutComboBox.getValue());
-            LocalDateTime vrijemeLansiranja = LocalDateTime.of(datum, vrijeme);
-
-            lansiranjeDAO.kreirajNovoLansiranje(
-                    naziv, zemlja, masa, misijaId, tipId,
-                    vrijemeLansiranja, raketaId, mjestoId
-            );
-
-            resetirajPolja();
-            statusLabel.setText("Uspješno kreirano novo lansiranje!");
-            statusLabel.setStyle("-fx-text-fill: green;");
-        } catch (NumberFormatException e) {
-            statusLabel.setText("Greška pri unosu brojeva. Provjerite polje 'Masa (kg)'.");
-            statusLabel.setStyle("-fx-text-fill: red;");
-            e.printStackTrace();
-        } catch (Exception e) {
-            statusLabel.setText("Greška: " + e.getMessage());
-            statusLabel.setStyle("-fx-text-fill: red;");
-            e.printStackTrace();
-        }
-    }
-
-    private void resetirajPolja() {
-        satelitNazivField.clear();
-        zemljaProizvodnjeField.clear();
-        masaKgField.clear();
-        misijaComboBox.setValue(null);
-        tipComboBox.setValue(null);
-        danComboBox.setValue(null);
-        mjesecComboBox.setValue(null);
-        godinaComboBox.setValue(null);
-        satComboBox.setValue(null);
-        minutComboBox.setValue(null);
-        raketaComboBox.setValue(null);
-        mjestoComboBox.setValue(null);
-    }
-
 
     //
     // Metode za ostale poglede i funkcionalnosti
@@ -332,7 +203,7 @@ public class SmtsController implements Initializable {
 
     private void popuniTabeluSvihSatelita() {
         try {
-            List<SatelitDetalji> satelitiList = lansiranjeDAO.dohvatiSveSateliteDetalje();
+            List<SatelitDetalji> satelitiList = satelitDAO.dohvatiSveSateliteDetalje();
             ObservableList<SatelitDetalji> data = FXCollections.observableArrayList(satelitiList);
             sviSatelitiDetaljiTable.setItems(data);
         } catch (Exception e) {
@@ -480,11 +351,9 @@ public class SmtsController implements Initializable {
         if (odabranoLansiranje != null) {
             try {
                 // Ovdje treba dohvatiti detalje satelita iz baze na osnovu ID-a lansiranja
-                // (Ovaj dio zahtijeva metodu u SatelitDAO)
                 SatelitDetalji satelitDetalji = satelitDAO.dohvatiDetaljeSatelitaPoLansiranjuId(odabranoLansiranje.getLansiranjeId());
 
                 if (satelitDetalji != null) {
-                    // Pozivamo pomoćnu metodu koja otvara novi prozor
                     prikaziProzorSDetaljima(satelitDetalji);
                 } else {
                     System.out.println("Detalji satelita nisu pronađeni.");
