@@ -20,6 +20,7 @@ public class DetaljiLansiranja {
         this.lansiranjeId = lansiranjeId;
     }
 
+    // Getteri za sve atribute
 
     public String getSatelit() {
         return satelit;

@@ -1,3 +1,4 @@
+// project.smts_app.db.obj/KomunikacijaStanicaSatelit.java
 package project.smts_app.db.obj;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ public class KomunikacijaStanicaSatelit {
         this.sadrzajPoruke = sadrzajPoruke;
     }
 
+    // Dodaj gettere za sve atribute (neophodno za PropertyValueFactory)
     public String getNazivStanice() { return nazivStanice; }
     public String getLokacijaStanice() { return lokacijaStanice; }
     public String getNazivSatelita() { return nazivSatelita; }
