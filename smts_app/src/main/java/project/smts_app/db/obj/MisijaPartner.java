@@ -1,4 +1,3 @@
-// project.smts_app.db.obj/MisijaPartner.java
 package project.smts_app.db.obj;
 
 public class MisijaPartner {
@@ -16,7 +15,6 @@ public class MisijaPartner {
         this.ulogaOperatera = ulogaOperatera;
     }
 
-    // Dodaj gettere za sve atribute
     public String getNazivMisije() { return nazivMisije; }
     public String getStatusMisije() { return statusMisije; }
     public String getZemlja() { return zemlja; }

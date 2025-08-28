@@ -68,4 +68,27 @@ public class Satelit {
     public void setTipId(int tipId) {
         this.tipId = tipId;
     }
+
+    public static class Tip {
+        private int tipId;
+        private String naziv;
+
+        public Tip(int tipId, String naziv) {
+            this.tipId = tipId;
+            this.naziv = naziv;
+        }
+
+        public int getTipId() {
+            return tipId;
+        }
+
+        public String getNaziv() {
+            return naziv;
+        }
+
+        @Override
+        public String toString() {
+            return naziv;
+        }
+    }
 }

@@ -1,4 +1,3 @@
-// project.smts_app.db.obj/MisijaStatus.java
 package project.smts_app.db.obj;
 
 import javafx.beans.property.SimpleStringProperty;

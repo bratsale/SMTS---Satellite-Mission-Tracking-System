@@ -1,4 +1,3 @@
-// project.smts_app.db.obj/LansiranjeProizvodjac.java
 package project.smts_app.db.obj;
 
 import javafx.beans.property.SimpleIntegerProperty;
@@ -16,7 +15,6 @@ public class LansiranjeProizvodjac {
         this.brojLansiranja = new SimpleIntegerProperty(brojLansiranja);
     }
 
-    // Getteri za property-je
     public String getProizvodjac() { return proizvodjac.get(); }
     public SimpleStringProperty proizvodjacProperty() { return proizvodjac; }
 
