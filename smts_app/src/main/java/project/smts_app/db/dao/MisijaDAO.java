@@ -1,9 +1,8 @@
 package project.smts_app.db.dao;
 
 import project.smts_app.util.SmtsConnection;
-import project.smts_app.db.obj.MisijaPartner;
-import project.smts_app.db.obj.MisijaStatus;
-import project.smts_app.db.obj.MisijaDetalji;
+
+import project.smts_app.db.obj.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

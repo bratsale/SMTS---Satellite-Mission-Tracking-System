@@ -3,7 +3,7 @@ package project.smts_app.gui;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import project.smts_app.db.obj.RaketaDetalji;
+import project.smts_app.db.obj.*;
 
 public class DetaljiRaketeController {
     @FXML private Label idLabel;

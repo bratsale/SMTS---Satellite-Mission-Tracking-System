@@ -1,10 +1,8 @@
 // project.smts_app.db.dao/RaketaDAO.java
 package project.smts_app.db.dao;
 
-import project.smts_app.db.obj.MisijaDetalji;
-import project.smts_app.db.obj.RaketaDetalji;
+import project.smts_app.db.obj.*;
 import project.smts_app.util.SmtsConnection;
-import project.smts_app.db.obj.RaketaNosac;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
