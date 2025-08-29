@@ -44,17 +44,19 @@ public class MisijaDAO {
 
     public List<MisijaStatus> dohvatiMisijePoStatusu() {
         List<MisijaStatus> listaMisija = new ArrayList<>();
-        String query = "SELECT naziv_misije, status FROM Misije_Po_Statusu";
+        // Pretpostavljam da je misija_id dostupan u pogledu. Ako nije, trebat će ga dodati.
+        String query = "SELECT misija_id, naziv_misije, status FROM Misije_Po_Statusu";
 
         try (Connection conn = SmtsConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                int misijaId = rs.getInt("misija_id");
                 String nazivMisije = rs.getString("naziv_misije");
                 String status = rs.getString("status");
 
-                MisijaStatus misija = new MisijaStatus(nazivMisije, status);
+                MisijaStatus misija = new MisijaStatus(misijaId, nazivMisije, status);
                 listaMisija.add(misija);
             }
         } catch (SQLException e) {
@@ -99,6 +101,32 @@ public class MisijaDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     int misijaId = rs.getInt("misija_id");
+                    String naziv = rs.getString("naziv");
+                    LocalDate datumPocetka = rs.getDate("datum_pocetka") != null ? rs.getDate("datum_pocetka").toLocalDate() : null;
+                    LocalDate datumKraja = rs.getDate("datum_kraja") != null ? rs.getDate("datum_kraja").toLocalDate() : null;
+                    String ciljMisije = rs.getString("cilj_misije");
+                    String status = rs.getString("status");
+                    return new MisijaDetalji(misijaId, naziv, datumPocetka, datumKraja, ciljMisije, status);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Dohvata sve detalje misije na osnovu njenog ID-a.
+     * @param misijaId ID misije
+     * @return Objekt MisijaDetalji ili null ako misija ne postoji
+     * @throws SQLException ako dođe do greške u bazi
+     */
+    public MisijaDetalji dohvatiDetaljeMisijePoMisijiId(int misijaId) throws SQLException {
+        String query = "SELECT misija_id, naziv, datum_pocetka, datum_kraja, cilj_misije, status " +
+                "FROM Misija WHERE misija_id = ?";
+        try (Connection conn = SmtsConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, misijaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     String naziv = rs.getString("naziv");
                     LocalDate datumPocetka = rs.getDate("datum_pocetka") != null ? rs.getDate("datum_pocetka").toLocalDate() : null;
                     LocalDate datumKraja = rs.getDate("datum_kraja") != null ? rs.getDate("datum_kraja").toLocalDate() : null;

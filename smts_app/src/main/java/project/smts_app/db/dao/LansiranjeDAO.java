@@ -146,33 +146,6 @@ public class LansiranjeDAO {
         return listaSatelita;
     }
 
-    public List<SatelitDetalji> dohvatiSveSateliteDetalje() {
-        List<SatelitDetalji> listaSatelita = new ArrayList<>();
-        String query = "SELECT * FROM Svi_Sateliti_Detalji";
-
-        try (Connection conn = SmtsConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                int satelitId = rs.getInt("satelit_id");
-                String nazivSatelita = rs.getString("naziv_satelita");
-                String zemljaProizvodnje = rs.getString("zemlja_proizvodnje");
-                double masaKg = rs.getDouble("masa_kg");
-                String tipSatelita = rs.getString("tip_satelita");
-                String nazivMisije = rs.getString("naziv_misije");
-                LocalDateTime vrijemeLansiranja = rs.getTimestamp("vrijeme_lansiranja").toLocalDateTime();
-                String raketaNosac = rs.getString("raketa_nosac");
-                String mjestoLansiranja = rs.getString("mjesto_lansiranja");
-
-                SatelitDetalji satelit = new SatelitDetalji(satelitId, nazivSatelita, zemljaProizvodnje, masaKg, tipSatelita, nazivMisije, vrijemeLansiranja, raketaNosac, mjestoLansiranja);
-                listaSatelita.add(satelit);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return listaSatelita;
-    }
 
     public List<LansiranjeProizvodjac> dohvatiLansiranjaPoProizvodjacu() {
         List<LansiranjeProizvodjac> listaLansiranja = new ArrayList<>();

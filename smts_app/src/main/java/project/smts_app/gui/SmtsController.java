@@ -36,7 +36,6 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.Parent;
 import java.io.IOException;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -100,6 +99,14 @@ public class SmtsController implements Initializable {
     @FXML
     private VBox mainContentPane;
 
+    // FXML varijable za novi dio
+    @FXML
+    private TextField misijeFilterField;
+    @FXML
+    private ComboBox<String> misijeStatusComboBox;
+    @FXML
+    private TextField satelitFilterField; // Dodan za pretragu satelita
+
     // Instance DAO klase
     private LansiranjeDAO lansiranjeDAO = new LansiranjeDAO();
     private MisijaDAO misijaDAO = new MisijaDAO();
@@ -112,6 +119,13 @@ public class SmtsController implements Initializable {
     private FilteredList<DetaljiLansiranja> filteredData;
     private ObservableList<DetaljiLansiranja> masterData = FXCollections.observableArrayList();
 
+    // Liste za novi dio
+    private ObservableList<MisijaStatus> masterMisijeStatusData = FXCollections.observableArrayList();
+    private FilteredList<MisijaStatus> filteredMisijeStatusData;
+
+    // Liste za satelite detalje
+    private ObservableList<SatelitDetalji> masterSatelitiDetaljiData = FXCollections.observableArrayList();
+    private FilteredList<SatelitDetalji> filteredSatelitiDetaljiData;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -328,17 +342,47 @@ public class SmtsController implements Initializable {
     protected void showSviSatelitiDetalji() {
         loadView("/project/smts_app/svi-sateliti-detalji.fxml");
         popuniTabeluSvihSatelita();
+        setupSatelitiDetaljiSearch();
     }
 
     private void popuniTabeluSvihSatelita() {
         try {
-            List<SatelitDetalji> satelitiList = lansiranjeDAO.dohvatiSveSateliteDetalje();
-            ObservableList<SatelitDetalji> data = FXCollections.observableArrayList(satelitiList);
-            sviSatelitiDetaljiTable.setItems(data);
+            List<SatelitDetalji> satelitiList = satelitDAO.dohvatiSveSateliteDetalje();
+            masterSatelitiDetaljiData.clear();
+            masterSatelitiDetaljiData.addAll(satelitiList);
+            sviSatelitiDetaljiTable.setItems(masterSatelitiDetaljiData);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private void setupSatelitiDetaljiSearch() {
+        filteredSatelitiDetaljiData = new FilteredList<>(masterSatelitiDetaljiData, p -> true);
+        satelitFilterField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredSatelitiDetaljiData.setPredicate(satelitDetalji -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                if (satelitDetalji.getNazivSatelita().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (satelitDetalji.getZemljaProizvodnje().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (satelitDetalji.getNazivMisije().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (satelitDetalji.getTipSatelita().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (String.valueOf(satelitDetalji.getMasaKg()).contains(lowerCaseFilter)) {
+                    return true;
+                }
+                return false;
+            });
+        });
+        SortedList<SatelitDetalji> sortedData = new SortedList<>(filteredSatelitiDetaljiData);
+        sortedData.comparatorProperty().bind(sviSatelitiDetaljiTable.comparatorProperty());
+        sviSatelitiDetaljiTable.setItems(sortedData);
+    }
+
 
     @FXML
     protected void showMisijePartneri() {
@@ -441,33 +485,75 @@ public class SmtsController implements Initializable {
     @FXML
     protected void showMisijePoStatusu() {
         loadView("/project/smts_app/misije-po-statusu.fxml");
-        popuniTabeluMisijeStatusa();
-        popuniGrafikonMisijeStatusa();
+        // Popuni i pripremi sve elemente nakon što se FXML učita
+        popuniMisijeTabeleIGrafikone();
+        setupMisijeSearchAndFilter();
+        // Dodaj listener za dvoklik
+        setupMisijeStatusTableDoubleClick();
     }
 
-    private void popuniTabeluMisijeStatusa() {
+    private void popuniMisijeTabeleIGrafikone() {
         try {
             List<MisijaStatus> lista = misijaDAO.dohvatiMisijePoStatusu();
-            ObservableList<MisijaStatus> data = FXCollections.observableArrayList(lista);
-            misijeStatusTable.setItems(data);
+            masterMisijeStatusData.clear();
+            masterMisijeStatusData.addAll(lista);
+            misijeStatusTable.setItems(masterMisijeStatusData);
+
+            // Popunjavanje ComboBox-a sa statusima
+            ObservableList<String> statuses = FXCollections.observableArrayList();
+            statuses.add("Sve misije");
+            statuses.add("Aktivna");
+            statuses.add("Završena");
+            misijeStatusComboBox.setItems(statuses);
+            misijeStatusComboBox.getSelectionModel().selectFirst();
+
+            // Popunjavanje grafikona
+            popuniGrafikonMisijeStatusa(masterMisijeStatusData);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void popuniGrafikonMisijeStatusa() {
-        try {
-            List<MisijaStatus> lista = misijaDAO.dohvatiMisijePoStatusu();
-            Map<String, Long> statusCount = lista.stream()
-                    .collect(Collectors.groupingBy(MisijaStatus::getStatus, Collectors.counting()));
-            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-            for (Map.Entry<String, Long> entry : statusCount.entrySet()) {
-                pieChartData.add(new PieChart.Data(entry.getKey() + " (" + entry.getValue() + ")", entry.getValue()));
-            }
-            misijeStatusChart.setData(pieChartData);
-        } catch (Exception e) {
-            e.printStackTrace();
+    private void setupMisijeSearchAndFilter() {
+        filteredMisijeStatusData = new FilteredList<>(masterMisijeStatusData, p -> true);
+
+        misijeFilterField.textProperty().addListener((observable, oldValue, newValue) -> {
+            updateMisijeFilter();
+        });
+
+        misijeStatusComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            updateMisijeFilter();
+        });
+
+        SortedList<MisijaStatus> sortedData = new SortedList<>(filteredMisijeStatusData);
+        sortedData.comparatorProperty().bind(misijeStatusTable.comparatorProperty());
+        misijeStatusTable.setItems(sortedData);
+    }
+
+    private void updateMisijeFilter() {
+        filteredMisijeStatusData.setPredicate(misijaStatus -> {
+            String filterText = misijeFilterField.getText() == null ? "" : misijeFilterField.getText().toLowerCase();
+            String selectedStatus = misijeStatusComboBox.getValue();
+
+            boolean matchesName = misijaStatus.getNazivMisije().toLowerCase().contains(filterText);
+            boolean matchesStatus = (selectedStatus == null || selectedStatus.equals("Sve misije") || misijaStatus.getStatus().equals(selectedStatus));
+
+            return matchesName && matchesStatus;
+        });
+
+        // Ažuriraj PieChart na temelju filtriranih podataka
+        popuniGrafikonMisijeStatusa(filteredMisijeStatusData);
+    }
+
+    private void popuniGrafikonMisijeStatusa(ObservableList<MisijaStatus> data) {
+        Map<String, Long> statusCount = data.stream()
+                .collect(Collectors.groupingBy(MisijaStatus::getStatus, Collectors.counting()));
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+        for (Map.Entry<String, Long> entry : statusCount.entrySet()) {
+            pieChartData.add(new PieChart.Data(entry.getKey() + " (" + entry.getValue() + ")", entry.getValue()));
         }
+        misijeStatusChart.setData(pieChartData);
     }
 
     /**
@@ -574,5 +660,38 @@ public class SmtsController implements Initializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Postavlja slušatelja za dvoklik na misijeStatusTable
+     * i otvara prozor s detaljima misije.
+     */
+    private void setupMisijeStatusTableDoubleClick() {
+        misijeStatusTable.setOnMouseClicked(event -> {
+            if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
+                MisijaStatus odabranaMisija = misijeStatusTable.getSelectionModel().getSelectedItem();
+                if (odabranaMisija != null) {
+                    try {
+                        // Dohvati detalje misije koristeći misijaId
+                        MisijaDetalji detalji = misijaDAO.dohvatiDetaljeMisijePoMisijiId(odabranaMisija.getMisijaId());
+                        if (detalji != null) {
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/detalji-misije.fxml"));
+                            Parent root = loader.load();
+                            DetaljiMisijeController controller = loader.getController();
+                            controller.setDetaljiMisije(detalji);
+
+                            Stage stage = new Stage();
+                            stage.setScene(new Scene(root));
+                            stage.setTitle("Detalji Misije");
+                            stage.initModality(Modality.APPLICATION_MODAL);
+                            stage.showAndWait();
+                        }
+                    } catch (SQLException | IOException e) {
+                        System.err.println("Greška prilikom dohvaćanja detalja misije ili otvaranja prozora.");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 }
