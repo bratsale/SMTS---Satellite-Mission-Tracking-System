@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.layout.StackPane?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="project.smts_app.gui.DetaljiAtmosfereController"
+      alignment="TOP_CENTER" spacing="10.0">
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0"/>
+    </padding>
+
+    <Label text="Položaj satelita u atmosferi" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <StackPane VBox.vgrow="ALWAYS">
+        <ImageView fx:id="atmosferaImageView" fitWidth="600" preserveRatio="true"/>
+        <Pane fx:id="overlayPane" pickOnBounds="false" />
+    </StackPane>
+
+    <Label fx:id="detaljiLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333333;"/>
+
+    <Button fx:id="zatvoriButton" onAction="#zatvoriProzor" text="Zatvori"/>
+</VBox>

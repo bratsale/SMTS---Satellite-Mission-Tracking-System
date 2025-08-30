@@ -153,6 +153,8 @@ public class SmtsController implements Initializable {
         if (satelitiOrbiteTable != null) {
             popuniTabeluSatelitaIOrbite();
             setupSatelitiOrbiteSearchAndFilter();
+            // NOVO: Postavi listener za dvoklik na tabelu satelita i orbita
+            setupSatelitiOrbiteDoubleClick();
         }
 
         // DODANA IZMJENA: Popunjavanje ComboBox-a za sfere se radi samo jednom
@@ -423,6 +425,42 @@ public class SmtsController implements Initializable {
             return matchesSearch && matchesSfera;
         });
     }
+
+    private void setupSatelitiOrbiteDoubleClick() {
+        satelitiOrbiteTable.setOnMouseClicked(event -> {
+            if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
+                SatelitOrbita odabraniSatelit = satelitiOrbiteTable.getSelectionModel().getSelectedItem();
+                if (odabraniSatelit != null) {
+                    try {
+                        prikaziDetaljeAtmosfere(odabraniSatelit.getNazivSatelita(), odabraniSatelit.getVisinaOrbiteKm());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        // Ovdje se može dodati poruka o grešci ako prozor ne uspije da se otvori
+                    }
+                }
+            }
+        });
+    }
+
+    private void prikaziDetaljeAtmosfere(String nazivSatelita, double visinaKm) throws IOException {
+        URL resourceUrl = getClass().getResource("/project/smts_app/detalji-atmosfere.fxml");
+        if (resourceUrl == null) {
+            throw new IOException("FXML file not found: /project/smts_app/detalji-atmosfere.fxml");
+        }
+
+        FXMLLoader loader = new FXMLLoader(resourceUrl);
+        Parent root = loader.load();
+
+        DetaljiAtmosfereController controller = loader.getController();
+        controller.setDetaljiSatelita(nazivSatelita, visinaKm);
+
+        Stage stage = new Stage();
+        stage.setScene(new Scene(root));
+        stage.setTitle("Položaj satelita u atmosferi");
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
+    }
+
 
     @FXML
     protected void showSviSatelitiDetalji() {
