@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableView;
 import project.smts_app.db.obj.*;
+import project.smts_app.util.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,6 +43,7 @@ import javafx.scene.input.MouseButton;
 import java.util.function.Predicate;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Modality;
+import java.sql.SQLException;
 
 
 public class SmtsController implements Initializable {
@@ -76,6 +78,8 @@ public class SmtsController implements Initializable {
     private ComboBox<Integer> minutComboBox;
     @FXML
     private Label statusLabel;
+    @FXML
+    private VBox glavniKonktejner;
 
     // FXML varijable za ostale poglede
     @FXML
@@ -872,4 +876,34 @@ public class SmtsController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    protected void prikaziVizualizacijuMisija() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/misije-vizualizacija.fxml"));
+            Parent root = loader.load();
+
+            MisijeVizualizacijaController controller = loader.getController();
+
+            // Nema potrebe za parentController referencom, jer je u novom prozoru
+            // Iako ju možete ostaviti, neće uzrokovati problem.
+            // controller.setParentController(this);
+
+            // Dohvati partnere i proslijedi ih kontroleru za vizualizaciju
+            List<MisijaPartner> partneri = misijaDAO.dohvatiMisijeDetaljePartnera();
+            controller.prikaziVizualizaciju(partneri);
+
+            // Kreiranje novog prozora (Stage) za vizualizaciju
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Vizualizacija misija i partnera");
+            stage.initModality(Modality.APPLICATION_MODAL); // Opcionalno: blokira glavni prozor
+            stage.show();
+
+        } catch (IOException e) {
+            System.err.println("Greška prilikom otvaranja vizualizacije misija: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
+

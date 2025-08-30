@@ -18,23 +18,25 @@
 
         <TableView fx:id="misijePartneriTable" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn text="Misija" prefWidth="150">
+                <TableColumn text="Misija" prefWidth="120">
                     <cellValueFactory><PropertyValueFactory property="nazivMisije" /></cellValueFactory>
                 </TableColumn>
                 <TableColumn text="Status" prefWidth="100">
                     <cellValueFactory><PropertyValueFactory property="statusMisije" /></cellValueFactory>
                 </TableColumn>
-                <TableColumn text="Zemlja" prefWidth="150">
+                <TableColumn text="Zemlja" prefWidth="100">
                     <cellValueFactory><PropertyValueFactory property="zemlja" /></cellValueFactory>
                 </TableColumn>
                 <TableColumn text="Operater" prefWidth="150">
                     <cellValueFactory><PropertyValueFactory property="operater" /></cellValueFactory>
                 </TableColumn>
-                <TableColumn text="Uloga" prefWidth="120">
+                <TableColumn text="Uloga" prefWidth="150">
                     <cellValueFactory><PropertyValueFactory property="ulogaOperatera" /></cellValueFactory>
                 </TableColumn>
             </columns>
         </TableView>
+
+        <Button onAction="#prikaziVizualizacijuMisija" text="Prikaži vizualizaciju"/>
 
         <Button onAction="#showMainMenu" text="Nazad"/>
     </children>
