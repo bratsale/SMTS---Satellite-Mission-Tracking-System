@@ -122,30 +122,6 @@ public class LansiranjeDAO {
         }
     }
 
-    public List<SatelitOrbita> dohvatiSveSateliteIOrbite() {
-        List<SatelitOrbita> listaSatelita = new ArrayList<>();
-        String query = "SELECT * FROM Sateliti_i_Orbite";
-
-        try (Connection conn = SmtsConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                String nazivSatelita = rs.getString("naziv_satelita");
-                String tipSatelita = rs.getString("tip_satelita");
-                String nazivMisije = rs.getString("naziv_misije");
-                double visinaOrbiteKm = rs.getDouble("visina_orbite_km");
-                double inklinacijaOrbite = rs.getDouble("inklinacija_orbite");
-
-                SatelitOrbita satelit = new SatelitOrbita(nazivSatelita, tipSatelita, nazivMisije, visinaOrbiteKm, inklinacijaOrbite);
-                listaSatelita.add(satelit);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return listaSatelita;
-    }
-
 
     public List<LansiranjeProizvodjac> dohvatiLansiranjaPoProizvodjacu() {
         List<LansiranjeProizvodjac> listaLansiranja = new ArrayList<>();

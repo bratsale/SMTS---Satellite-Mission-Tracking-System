@@ -1,6 +1,7 @@
 package project.smts_app.db.dao;
 
 import project.smts_app.db.obj.SatelitDetalji;
+import project.smts_app.db.obj.SatelitOrbita;
 import project.smts_app.util.SmtsConnection;
 import project.smts_app.db.obj.Satelit;
 import java.sql.Connection;
@@ -77,6 +78,30 @@ public class SatelitDAO {
                 String nazivMisije = rs.getString("naziv_misije");
 
                 SatelitDetalji satelit = new SatelitDetalji(satelitId, nazivSatelita, zemljaProizvodnje, masaKg, tipSatelita, nazivMisije);
+                listaSatelita.add(satelit);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listaSatelita;
+    }
+
+    public List<SatelitOrbita> dohvatiSveSateliteIOrbite() {
+        List<SatelitOrbita> listaSatelita = new ArrayList<>();
+        String query = "SELECT * FROM Sateliti_i_Orbite";
+
+        try (Connection conn = SmtsConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String nazivSatelita = rs.getString("naziv_satelita");
+                String tipSatelita = rs.getString("tip_satelita");
+                String nazivMisije = rs.getString("naziv_misije");
+                double visinaOrbiteKm = rs.getDouble("visina_orbite_km");
+                double inklinacijaOrbite = rs.getDouble("inklinacija_orbite");
+
+                SatelitOrbita satelit = new SatelitOrbita(nazivSatelita, tipSatelita, nazivMisije, visinaOrbiteKm, inklinacijaOrbite);
                 listaSatelita.add(satelit);
             }
         } catch (SQLException e) {

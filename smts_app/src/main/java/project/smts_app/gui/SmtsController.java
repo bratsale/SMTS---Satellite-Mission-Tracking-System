@@ -36,11 +36,10 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import java.io.IOException;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableColumn;
 import javafx.scene.input.MouseButton;
+import java.util.function.Predicate;
 
 public class SmtsController implements Initializable {
 
@@ -56,7 +55,7 @@ public class SmtsController implements Initializable {
     @FXML
     private ComboBox<MisijaDetalji> misijaComboBox;
     @FXML
-    private ComboBox<Satelit.Tip> tipComboBox; // Promijenjeno
+    private ComboBox<Satelit.Tip> tipComboBox;
     @FXML
     private ComboBox<RaketaNosac> raketaComboBox;
     @FXML
@@ -105,26 +104,32 @@ public class SmtsController implements Initializable {
     @FXML
     private ComboBox<String> misijeStatusComboBox;
     @FXML
-    private TextField satelitFilterField; // Dodan za pretragu satelita
+    private TextField satelitFilterField;
+    @FXML
+    private TextField satelitOrbitaFilterField;
+    @FXML
+    private ComboBox<String> sferaComboBox;
 
     // Instance DAO klase
-    private LansiranjeDAO lansiranjeDAO = new LansiranjeDAO();
-    private MisijaDAO misijaDAO = new MisijaDAO();
-    private KomunikacijaDAO komunikacijaDAO = new KomunikacijaDAO();
-    private RaketaDAO raketaDAO = new RaketaDAO();
-    private MjestoDAO mjestoDAO = new MjestoDAO();
-    private SatelitDAO satelitDAO = new SatelitDAO(); // Nova DAO instanca
+    private final LansiranjeDAO lansiranjeDAO = new LansiranjeDAO();
+    private final MisijaDAO misijaDAO = new MisijaDAO();
+    private final KomunikacijaDAO komunikacijaDAO = new KomunikacijaDAO();
+    private final RaketaDAO raketaDAO = new RaketaDAO();
+    private final MjestoDAO mjestoDAO = new MjestoDAO();
+    private final SatelitDAO satelitDAO = new SatelitDAO();
 
     // Liste za pretragu
     private FilteredList<DetaljiLansiranja> filteredData;
     private ObservableList<DetaljiLansiranja> masterData = FXCollections.observableArrayList();
+    private final ObservableList<SatelitOrbita> masterSatelitiOrbiteData = FXCollections.observableArrayList();
+    private FilteredList<SatelitOrbita> filteredSatelitiOrbiteData;
 
     // Liste za novi dio
-    private ObservableList<MisijaStatus> masterMisijeStatusData = FXCollections.observableArrayList();
+    private final ObservableList<MisijaStatus> masterMisijeStatusData = FXCollections.observableArrayList();
     private FilteredList<MisijaStatus> filteredMisijeStatusData;
 
     // Liste za satelite detalje
-    private ObservableList<SatelitDetalji> masterSatelitiDetaljiData = FXCollections.observableArrayList();
+    private final ObservableList<SatelitDetalji> masterSatelitiDetaljiData = FXCollections.observableArrayList();
     private FilteredList<SatelitDetalji> filteredSatelitiDetaljiData;
 
     @Override
@@ -142,6 +147,33 @@ public class SmtsController implements Initializable {
         if (godinaComboBox != null) {
             popuniDatumVrijemeDropdowns();
             popuniComboBoxes();
+        }
+
+        // Dodaj novu logiku za Sateliti i Orbite
+        if (satelitiOrbiteTable != null) {
+            popuniTabeluSatelitaIOrbite();
+            setupSatelitiOrbiteSearchAndFilter();
+        }
+
+        // DODANA IZMJENA: Popunjavanje ComboBox-a za sfere se radi samo jednom
+        if (sferaComboBox != null) {
+            sferaComboBox.getItems().addAll("Sve sfere", "Troposfera", "Stratosfera", "Mezosfera", "Termosfera", "Egzosfera");
+            sferaComboBox.getSelectionModel().selectFirst();
+            // Listener se dodaje ovdje da se ne duplira
+            sferaComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> applySatelitOrbitaFilters());
+        }
+
+        // Dodaj novu logiku za Svi Sateliti Detalji
+        if (sviSatelitiDetaljiTable != null) {
+            popuniTabeluSvihSatelita();
+            setupSatelitiDetaljiSearch();
+        }
+
+        // Dodaj novu logiku za Misije Po Statusu
+        if (misijeStatusTable != null) {
+            popuniMisijeTabeleIGrafikone();
+            setupMisijeSearchAndFilter();
+            setupMisijeStatusTableDoubleClick();
         }
     }
 
@@ -257,7 +289,7 @@ public class SmtsController implements Initializable {
 
             // Dohvatanje ID-jeva iz odabranih objekata
             int misijaId = misijaComboBox.getValue().getMisijaId();
-            int tipId = tipComboBox.getValue().getTipId(); // Promijenjeno
+            int tipId = tipComboBox.getValue().getTipId();
             int raketaId = raketaComboBox.getValue().getRaketaId();
             int mjestoId = mjestoComboBox.getValue().getMjestoId();
 
@@ -325,17 +357,71 @@ public class SmtsController implements Initializable {
     @FXML
     protected void showSatelitiOrbite() {
         loadView("/project/smts_app/sateliti-i-orbite.fxml");
+        // Popuni i pripremi sve elemente nakon što se FXML učita
         popuniTabeluSatelitaIOrbite();
+        setupSatelitiOrbiteSearchAndFilter();
     }
 
     private void popuniTabeluSatelitaIOrbite() {
         try {
-            List<SatelitOrbita> satelitiList = lansiranjeDAO.dohvatiSveSateliteIOrbite();
-            ObservableList<SatelitOrbita> data = FXCollections.observableArrayList(satelitiList);
-            satelitiOrbiteTable.setItems(data);
+            List<SatelitOrbita> satelitiList = satelitDAO.dohvatiSveSateliteIOrbite();
+            masterSatelitiOrbiteData.clear();
+            masterSatelitiOrbiteData.addAll(satelitiList);
+            satelitiOrbiteTable.setItems(masterSatelitiOrbiteData);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupSatelitiOrbiteSearchAndFilter() {
+        filteredSatelitiOrbiteData = new FilteredList<>(masterSatelitiOrbiteData, p -> true);
+
+        satelitOrbitaFilterField.textProperty().addListener((observable, oldValue, newValue) -> applySatelitOrbitaFilters());
+        // Uklonjen listener iz ove metode jer se dodaje u initialize()
+        // sferaComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> applySatelitOrbitaFilters());
+
+        SortedList<SatelitOrbita> sortedData = new SortedList<>(filteredSatelitiOrbiteData);
+        sortedData.comparatorProperty().bind(satelitiOrbiteTable.comparatorProperty());
+        satelitiOrbiteTable.setItems(sortedData);
+    }
+
+    private void applySatelitOrbitaFilters() {
+        filteredSatelitiOrbiteData.setPredicate(satelitOrbita -> {
+            boolean matchesSearch = true;
+            String searchText = satelitOrbitaFilterField.getText();
+            if (searchText != null && !searchText.isEmpty()) {
+                String lowerCaseFilter = searchText.toLowerCase();
+                matchesSearch = satelitOrbita.getNazivSatelita().toLowerCase().contains(lowerCaseFilter) ||
+                        satelitOrbita.getTipSatelita().toLowerCase().contains(lowerCaseFilter) ||
+                        satelitOrbita.getNazivMisije().toLowerCase().contains(lowerCaseFilter) ||
+                        String.valueOf(satelitOrbita.getVisinaOrbiteKm()).contains(lowerCaseFilter) ||
+                        String.valueOf(satelitOrbita.getInklinacijaOrbite()).contains(lowerCaseFilter);
+            }
+
+            boolean matchesSfera = true;
+            String selectedSfera = sferaComboBox.getSelectionModel().getSelectedItem();
+            if (selectedSfera != null && !"Sve sfere".equals(selectedSfera)) {
+                double visina = satelitOrbita.getVisinaOrbiteKm();
+                switch (selectedSfera) {
+                    case "Troposfera":
+                        matchesSfera = visina >= 0 && visina <= 20;
+                        break;
+                    case "Stratosfera":
+                        matchesSfera = visina > 20 && visina <= 50;
+                        break;
+                    case "Mezosfera":
+                        matchesSfera = visina > 50 && visina <= 85;
+                        break;
+                    case "Termosfera":
+                        matchesSfera = visina > 85 && visina <= 600;
+                        break;
+                    case "Egzosfera":
+                        matchesSfera = visina > 600;
+                        break;
+                }
+            }
+            return matchesSearch && matchesSfera;
+        });
     }
 
     @FXML

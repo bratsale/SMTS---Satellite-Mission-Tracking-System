@@ -3,8 +3,11 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns="http://javafx.com/javafx/17"
@@ -15,6 +18,12 @@
     </padding>
     <children>
         <Label text="Sateliti i orbite" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="Pretraži:"/>
+            <TextField fx:id="satelitOrbitaFilterField" promptText="Pretraži po nazivu, tipu, misiji..."/>
+            <Label text="Sfera:"/>
+            <ComboBox fx:id="sferaComboBox" promptText="Odaberi sferu"/>
+        </HBox>
 
         <TableView fx:id="satelitiOrbiteTable" VBox.vgrow="ALWAYS">
             <columns>
