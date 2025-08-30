@@ -40,6 +40,9 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import java.util.function.Predicate;
+import javafx.scene.input.MouseButton;
+import javafx.stage.Modality;
+
 
 public class SmtsController implements Initializable {
 
@@ -528,6 +531,7 @@ public class SmtsController implements Initializable {
     protected void showKomunikacija() {
         loadView("/project/smts_app/komunikacija.fxml");
         popuniTabeluKomunikacija();
+        setupKomunikacijaTableDoubleClick(); // Dodajte ovu liniju
     }
 
     private void popuniTabeluKomunikacija() {
@@ -817,5 +821,55 @@ public class SmtsController implements Initializable {
                 }
             }
         });
+    }
+
+    private void setupKomunikacijaTableDoubleClick() {
+        komunikacijaTable.setOnMouseClicked(event -> {
+            if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
+                KomunikacijaStanicaSatelit odabranaKomunikacija = komunikacijaTable.getSelectionModel().getSelectedItem();
+                if (odabranaKomunikacija != null) {
+                    try {
+                        prikaziDetaljeKomunikacije(odabranaKomunikacija);
+                    } catch (Exception e) {
+                        System.err.println("Greška prilikom otvaranja prozora s detaljima komunikacije: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void prikaziDetaljeKomunikacije(KomunikacijaStanicaSatelit komunikacija) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/detalji-komunikacije.fxml"));
+        Parent root = loader.load();
+
+        DetaljiKomunikacijeController controller = loader.getController();
+        controller.setDetaljiKomunikacije(komunikacija);
+
+        Stage stage = new Stage();
+        stage.setScene(new Scene(root));
+        stage.setTitle("Detalji komunikacije");
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
+    }
+
+    @FXML
+    protected void kreirajPoruku() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/kreiraj-poruku.fxml"));
+            Parent root = loader.load();
+
+            KreirajPorukuController controller = loader.getController();
+            controller.setRefreshCallback(() -> popuniTabeluKomunikacija());
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Kreiraj poruku");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (IOException e) {
+            System.err.println("Greška prilikom otvaranja prozora za kreiranje poruke: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

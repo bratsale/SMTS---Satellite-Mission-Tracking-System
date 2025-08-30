@@ -69,6 +69,11 @@ public class Satelit {
         this.tipId = tipId;
     }
 
+    @Override
+    public String toString() {
+        return naziv;
+    }
+
     public static class Tip {
         private int tipId;
         private String naziv;

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="project.smts_app.gui.DetaljiKomunikacijeController"
+      alignment="TOP_CENTER" spacing="10.0">
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0"/>
+    </padding>
+
+    <Label text="Detalji komunikacije" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <Label fx:id="posiljalacLabel" style="-fx-font-weight: bold;"/>
+    <Label fx:id="primalacLabel" style="-fx-font-weight: bold;"/>
+    <Label fx:id="datumTipLabel" style="-fx-font-style: italic;"/>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <content>
+            <TextArea fx:id="porukaTextArea" wrapText="true" editable="false" style="-fx-border-color: lightgray; -fx-border-radius: 5;"/>
+        </content>
+    </ScrollPane>
+
+    <Button onAction="#zatvoriProzor" text="Zatvori"/>
+</VBox>
