@@ -27,7 +27,6 @@ public class KomunikacijaStanicaSatelit {
         this.sadrzajPoruke = sadrzajPoruke;
     }
 
-    // Novi konstruktor za podatke iz Komunikacija_Stanica_Satelit pogleda (VIEW)
     public KomunikacijaStanicaSatelit(String nazivStanice, String lokacijaStanice, String nazivSatelita, LocalDate datumKomunikacije, String tipKomunikacije, String sadrzajPoruke) {
         this.nazivStanice = nazivStanice;
         this.lokacijaStanice = lokacijaStanice;
@@ -37,7 +36,6 @@ public class KomunikacijaStanicaSatelit {
         this.sadrzajPoruke = sadrzajPoruke;
     }
 
-    // Getteri
     public int getKomunikacijaId() { return komunikacijaId; }
     public int getSatelitId() { return satelitId; }
     public String getNazivSatelita() { return nazivSatelita; }

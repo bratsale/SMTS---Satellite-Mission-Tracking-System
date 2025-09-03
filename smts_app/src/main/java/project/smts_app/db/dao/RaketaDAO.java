@@ -1,4 +1,3 @@
-// project.smts_app.db.dao/RaketaDAO.java
 package project.smts_app.db.dao;
 
 import project.smts_app.db.obj.*;

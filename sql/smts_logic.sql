@@ -73,6 +73,7 @@ ORDER BY COUNT(l.lansiranje_id) DESC;
 -- Pogled koji omogucava pregled misija po statusu
 CREATE OR REPLACE VIEW Misije_Po_Statusu AS
 SELECT
+    m.misija_id,
     m.naziv AS naziv_misije,
     m.datum_pocetka,
     m.datum_kraja,
@@ -86,7 +87,6 @@ FROM Misija AS m;
 
 SELECT * FROM Misije_Po_Statusu;
 
--- Pogled koji pruza sveobuhvatne informacije o svakom satelitu
 CREATE OR REPLACE VIEW Svi_Sateliti_Detalji AS
 SELECT
     s.satelit_id,
@@ -94,16 +94,10 @@ SELECT
     s.zemlja_proizvodnje,
     s.masa_kg,
     ts.naziv_tipa AS tip_satelita,
-    m.naziv AS naziv_misije,
-    l.vrijeme_lansiranja,
-    rn.naziv AS raketa_nosac,
-    ml.naziv AS mjesto_lansiranja
+    m.naziv AS naziv_misije
 FROM Satelit AS s
-JOIN Tip_Satelita AS ts ON s.tip_id = ts.tip_id
-JOIN Misija AS m ON s.misija_id = m.misija_id
-JOIN Lansiranje AS l ON s.satelit_id = l.satelit_id
-JOIN Raketa_Nosac AS rn ON l.raketa_id = rn.raketa_id
-JOIN Mjesto_Lansiranja AS ml ON l.mjesto_id = ml.mjesto_id;
+LEFT JOIN Tip_Satelita AS ts ON s.tip_id = ts.tip_id
+LEFT JOIN Misija AS m ON s.misija_id = m.misija_id;
 
 SELECT * FROM Svi_Sateliti_Detalji;
 

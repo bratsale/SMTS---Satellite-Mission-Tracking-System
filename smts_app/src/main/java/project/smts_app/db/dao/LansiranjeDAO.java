@@ -40,7 +40,7 @@ public class LansiranjeDAO {
 
     public List<DetaljiLansiranja> dohvatiSveDetaljeLansiranja() {
         List<DetaljiLansiranja> listaLansiranja = new ArrayList<>();
-        String query = "SELECT l.lansiranje_id, " +  // Dodaj ID lansiranja
+        String query = "SELECT l.lansiranje_id, " +
                 "s.naziv AS satelit_naziv, " +
                 "l.vrijeme_lansiranja, " +
                 "r.naziv AS raketa_naziv, " +
@@ -57,7 +57,7 @@ public class LansiranjeDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                int lansiranjeId = rs.getInt("lansiranje_id"); // Dohvati ID
+                int lansiranjeId = rs.getInt("lansiranje_id");
                 String satelit = rs.getString("satelit_naziv");
                 LocalDateTime vrijemeLansiranja = rs.getTimestamp("vrijeme_lansiranja").toLocalDateTime();
                 String raketaNosac = rs.getString("raketa_naziv");
@@ -73,11 +73,7 @@ public class LansiranjeDAO {
         return listaLansiranja;
     }
 
-    /**
-     * Brise lansiranje iz baze podataka na osnovu ID-ja.
-     * Takodje brise i povezani satelit.
-     * @param lansiranjeId ID lansiranja koje treba obrisati
-     */
+
     public void obrisiLansiranje(int lansiranjeId) throws SQLException {
         String getSatelitIdQuery = "SELECT satelit_id FROM Lansiranje WHERE lansiranje_id = ?";
         String deleteLansiranjeQuery = "DELETE FROM Lansiranje WHERE lansiranje_id = ?";
@@ -107,7 +103,6 @@ public class LansiranjeDAO {
                     ps.executeUpdate();
                 }
 
-                // Ako je sve uspjesno, commit-uj transakciju
                 conn.commit();
                 System.out.println("Lansiranje i povezani satelit su uspješno obrisani.");
             } else {

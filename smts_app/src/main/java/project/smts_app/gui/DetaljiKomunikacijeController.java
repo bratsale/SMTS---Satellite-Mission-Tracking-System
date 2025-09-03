@@ -17,19 +17,13 @@ public class DetaljiKomunikacijeController {
     @FXML
     private TextArea porukaTextArea;
 
-    /**
-     * Postavlja detalje komunikacije u prikaz.
-     * Dodane su oznake "Od" i "Prema" na temelju tipa komunikacije.
-     */
     public void setDetaljiKomunikacije(KomunikacijaStanicaSatelit komunikacija) {
         String tipKomunikacije = komunikacija.getTipKomunikacije().toLowerCase();
 
         if (tipKomunikacije.contains("command") || tipKomunikacije.contains("update")) {
-            // Ako je komanda ili update, stanica šalje satelitu
             posiljalacLabel.setText("Od: " + komunikacija.getNazivStanice());
             primalacLabel.setText("Prema: " + komunikacija.getNazivSatelita());
         } else {
-            // Ako su podaci ili telemetrija, satelit šalje stanici
             posiljalacLabel.setText("Od: " + komunikacija.getNazivSatelita());
             primalacLabel.setText("Prema: " + komunikacija.getNazivStanice());
         }

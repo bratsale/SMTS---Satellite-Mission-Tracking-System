@@ -1,4 +1,3 @@
-// project.smts_app.db.dao/MjestoDAO.java
 package project.smts_app.db.dao;
 
 

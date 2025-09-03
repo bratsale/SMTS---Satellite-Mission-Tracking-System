@@ -14,10 +14,6 @@ import java.util.List;
 
 public class MisijaDAO {
 
-    /**
-     * Dohvata detalje o misijama i njihovim partnerima iz pogleda Misije_Detalji_Partnera.
-     * @return Lista objekata MisijaPartner
-     */
     public List<MisijaPartner> dohvatiMisijeDetaljePartnera() {
         List<MisijaPartner> listaMisija = new ArrayList<>();
         String query = "SELECT * FROM Misije_Detalji_Partnera";
@@ -44,7 +40,6 @@ public class MisijaDAO {
 
     public List<MisijaStatus> dohvatiMisijePoStatusu() {
         List<MisijaStatus> listaMisija = new ArrayList<>();
-        // Pretpostavljam da je misija_id dostupan u pogledu. Ako nije, trebat će ga dodati.
         String query = "SELECT misija_id, naziv_misije, status FROM Misije_Po_Statusu";
 
         try (Connection conn = SmtsConnection.getConnection();
@@ -65,10 +60,7 @@ public class MisijaDAO {
         return listaMisija;
     }
 
-    /**
-     * Dohvata sve misije s njihovim ID-evima i nazivima.
-     * @return Lista objekata MisijaDetalji
-     */
+
     public List<MisijaDetalji> dohvatiSveMisije() {
         List<MisijaDetalji> listaMisija = new ArrayList<>();
         String query = "SELECT misija_id, naziv FROM Misija";
@@ -113,12 +105,6 @@ public class MisijaDAO {
         return null;
     }
 
-    /**
-     * Dohvata sve detalje misije na osnovu njenog ID-a.
-     * @param misijaId ID misije
-     * @return Objekt MisijaDetalji ili null ako misija ne postoji
-     * @throws SQLException ako dođe do greške u bazi
-     */
     public MisijaDetalji dohvatiDetaljeMisijePoMisijiId(int misijaId) throws SQLException {
         String query = "SELECT misija_id, naziv, datum_pocetka, datum_kraja, cilj_misije, status " +
                 "FROM Misija WHERE misija_id = ?";

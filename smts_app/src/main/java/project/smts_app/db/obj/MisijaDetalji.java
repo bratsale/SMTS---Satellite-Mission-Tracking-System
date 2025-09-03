@@ -9,15 +9,13 @@ public class MisijaDetalji {
     private LocalDate datumKraja;
     private String ciljMisije;
     private String status;
-    private int brojSatelita; // Možda ti ovo zatreba
+    private int brojSatelita;
 
-    // Postojeći konstruktor sa dva argumenta
     public MisijaDetalji(int misijaId, String naziv) {
         this.misijaId = misijaId;
         this.naziv = naziv;
     }
 
-    // Novi, prošireni konstruktor sa svim detaljima
     public MisijaDetalji(int misijaId, String naziv, LocalDate datumPocetka, LocalDate datumKraja, String ciljMisije, String status) {
         this.misijaId = misijaId;
         this.naziv = naziv;
@@ -27,7 +25,6 @@ public class MisijaDetalji {
         this.status = status;
     }
 
-    // Getteri za sva polja
     public int getMisijaId() {
         return misijaId;
     }

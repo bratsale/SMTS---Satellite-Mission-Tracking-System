@@ -20,12 +20,10 @@ public class DetaljiAtmosfereController implements Initializable {
     @FXML
     private Button zatvoriButton;
 
-    // Granice slojeva atmosfere u km
     private static final double[] GRANICE_SLOJEVA_KM = {0, 20, 50, 85, 700};
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Učitavanje slike
         try (InputStream is = getClass().getResourceAsStream("/images/atmosphere_layers.png")) {
             if (is != null) {
                 Image image = new Image(is);

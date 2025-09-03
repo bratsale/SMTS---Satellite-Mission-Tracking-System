@@ -1,4 +1,3 @@
-// project.smts_app.db.dao/KomunikacijaDAO.java
 package project.smts_app.db.dao;
 
 import project.smts_app.util.SmtsConnection;
@@ -27,12 +26,10 @@ public class KomunikacijaDAO {
                 String nazivStanice = rs.getString("naziv_stanice");
                 String lokacijaStanice = rs.getString("lokacija_stanice");
                 String nazivSatelita = rs.getString("naziv_satelita");
-                // Ispravljeno dohvaćanje datuma u LocalDate formatu
                 LocalDate datumKomunikacije = rs.getDate("datum_komunikacije").toLocalDate();
                 String tipKomunikacije = rs.getString("tip_komunikacije");
                 String sadrzajPoruke = rs.getString("sadrzaj_poruke");
 
-                // Korištenje novog konstruktora
                 KomunikacijaStanicaSatelit komunikacija = new KomunikacijaStanicaSatelit(nazivStanice, lokacijaStanice, nazivSatelita, datumKomunikacije, tipKomunikacije, sadrzajPoruke);
                 listaKomunikacija.add(komunikacija);
             }

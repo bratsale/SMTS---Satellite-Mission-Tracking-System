@@ -24,6 +24,7 @@ import javafx.scene.control.ComboBox;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.net.URL;
 import java.util.Map;
@@ -56,7 +57,6 @@ public class SmtsController implements Initializable {
     @FXML
     private TextField masaKgField;
 
-    // Promijenjeni ComboBox-ovi umjesto TextField-a
     @FXML
     private ComboBox<MisijaDetalji> misijaComboBox;
     @FXML
@@ -65,6 +65,8 @@ public class SmtsController implements Initializable {
     private ComboBox<RaketaNosac> raketaComboBox;
     @FXML
     private ComboBox<MjestoLansiranja> mjestoComboBox;
+    @FXML
+    private ComboBox<String> zemljaProizvodnjeComboBox;
 
     @FXML
     private ComboBox<Integer> danComboBox;
@@ -81,7 +83,6 @@ public class SmtsController implements Initializable {
     @FXML
     private VBox glavniKonktejner;
 
-    // FXML varijable za ostale poglede
     @FXML
     private TextField filterField;
     @FXML
@@ -105,7 +106,6 @@ public class SmtsController implements Initializable {
     @FXML
     private VBox mainContentPane;
 
-    // FXML varijable za novi dio
     @FXML
     private TextField misijeFilterField;
     @FXML
@@ -131,17 +131,14 @@ public class SmtsController implements Initializable {
     private final ObservableList<SatelitOrbita> masterSatelitiOrbiteData = FXCollections.observableArrayList();
     private FilteredList<SatelitOrbita> filteredSatelitiOrbiteData;
 
-    // Liste za novi dio
     private final ObservableList<MisijaStatus> masterMisijeStatusData = FXCollections.observableArrayList();
     private FilteredList<MisijaStatus> filteredMisijeStatusData;
 
-    // Liste za satelite detalje
     private final ObservableList<SatelitDetalji> masterSatelitiDetaljiData = FXCollections.observableArrayList();
     private FilteredList<SatelitDetalji> filteredSatelitiDetaljiData;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Provjeri je li tabela inicijalizirana (nalazi se u FXML-u)
         if (detaljiLansiranjaTable != null) {
             popuniTabeluLansiranja();
             setupDetaljiLansiranjaTableContextMenu();
@@ -156,29 +153,24 @@ public class SmtsController implements Initializable {
             popuniComboBoxes();
         }
 
-        // Dodaj novu logiku za Sateliti i Orbite
         if (satelitiOrbiteTable != null) {
             popuniTabeluSatelitaIOrbite();
             setupSatelitiOrbiteSearchAndFilter();
-            // NOVO: Postavi listener za dvoklik na tabelu satelita i orbita
             setupSatelitiOrbiteDoubleClick();
+            setupSatelitiOrbiteContextMenu();
         }
 
-        // DODANA IZMJENA: Popunjavanje ComboBox-a za sfere se radi samo jednom
         if (sferaComboBox != null) {
             sferaComboBox.getItems().addAll("Sve sfere", "Troposfera", "Stratosfera", "Mezosfera", "Termosfera", "Egzosfera");
             sferaComboBox.getSelectionModel().selectFirst();
-            // Listener se dodaje ovdje da se ne duplira
             sferaComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> applySatelitOrbitaFilters());
         }
 
-        // Dodaj novu logiku za Svi Sateliti Detalji
         if (sviSatelitiDetaljiTable != null) {
             popuniTabeluSvihSatelita();
             setupSatelitiDetaljiSearch();
         }
 
-        // Dodaj novu logiku za Misije Po Statusu
         if (misijeStatusTable != null) {
             popuniMisijeTabeleIGrafikone();
             setupMisijeSearchAndFilter();
@@ -192,7 +184,7 @@ public class SmtsController implements Initializable {
             List<MisijaDetalji> misije = misijaDAO.dohvatiSveMisije();
             misijaComboBox.getItems().addAll(misije);
 
-            // Popunjavanje Tipa satelita pomoću SatelitDAO-a
+            // Popunjavanje Tipa satelita pomoću SatelitDAO
             List<Satelit.Tip> tipovi = satelitDAO.dohvatiSveTipoveSatelita();
             tipComboBox.setItems(FXCollections.observableArrayList(tipovi));
 
@@ -204,6 +196,16 @@ public class SmtsController implements Initializable {
             List<MjestoLansiranja> mjesta = mjestoDAO.dohvatiSvaMjestaLansiranja();
             mjestoComboBox.getItems().addAll(mjesta);
 
+            List<String> zemlje = Arrays.asList(
+                    "SAD", "Rusija", "Kina", "Japan", "Indija", "Evropska unija",
+                    "Kanada", "Ujedinjeno Kraljevstvo", "Izrael", "Južna Koreja",
+                    "Brazil", "Australija", "Francuska", "Njemačka", "Italija"
+            );
+            // Provjera da li je ComboBox inicijalizovan (zbog učitavanja različitih FXML-ova)
+            if (zemljaProizvodnjeComboBox != null) {
+                zemljaProizvodnjeComboBox.getItems().addAll(zemlje);
+            }
+
         } catch (Exception e) {
             statusLabel.setText("Greška pri dohvaćanju podataka iz baze.");
             statusLabel.setStyle("-fx-text-fill: red;");
@@ -212,18 +214,14 @@ public class SmtsController implements Initializable {
     }
 
     private void popuniDatumVrijemeDropdowns() {
-        // Popuni godine od 1950. do tekuće godine
         int currentYear = Year.now().getValue();
         godinaComboBox.getItems().addAll(IntStream.rangeClosed(1950, currentYear).boxed().collect(Collectors.toList()));
 
-        // Popuni mjesece
         mjesecComboBox.getItems().addAll(IntStream.rangeClosed(1, 12).boxed().collect(Collectors.toList()));
 
-        // Popuni sate i minute
         satComboBox.getItems().addAll(IntStream.rangeClosed(0, 23).boxed().collect(Collectors.toList()));
         minutComboBox.getItems().addAll(IntStream.rangeClosed(0, 59).boxed().collect(Collectors.toList()));
 
-        // Dodaj listenere za dinamičko ažuriranje dana
         mjesecComboBox.valueProperty().addListener((obs, oldVal, newVal) -> azurirajDane());
         godinaComboBox.valueProperty().addListener((obs, oldVal, newVal) -> azurirajDane());
     }
@@ -239,9 +237,7 @@ public class SmtsController implements Initializable {
         }
     }
 
-    //
-    // Glavne metode za prebacivanje prikaza
-    //
+
     @FXML
     protected void showKreirajLansiranje() {
         loadView("/project/smts_app/kreiraj-lansiranje.fxml");
@@ -268,17 +264,16 @@ public class SmtsController implements Initializable {
         }
     }
 
-    /**
-     * Metoda koja se poziva klikom na dugme "Kreiraj lansiranje".
-     */
+
     @FXML
     protected void kreirajLansiranje() {
         try {
+            // Provjera popunjenosti sada provjerava ComboBox
             if (satelitNazivField.getText().isEmpty() ||
-                    zemljaProizvodnjeField.getText().isEmpty() ||
-                    masaKgField.getText().isEmpty() ||
                     misijaComboBox.getValue() == null ||
                     tipComboBox.getValue() == null ||
+                    zemljaProizvodnjeComboBox.getValue() == null || // KLJUČNA IZMJENA
+                    masaKgField.getText().isEmpty() ||
                     danComboBox.getValue() == null ||
                     mjesecComboBox.getValue() == null ||
                     godinaComboBox.getValue() == null ||
@@ -293,16 +288,14 @@ public class SmtsController implements Initializable {
             }
 
             String naziv = satelitNazivField.getText();
-            String zemlja = zemljaProizvodnjeField.getText();
+            String zemlja = zemljaProizvodnjeComboBox.getValue(); // KLJUČNA IZMJENA
             double masa = Double.parseDouble(masaKgField.getText());
 
-            // Dohvatanje ID-jeva iz odabranih objekata
             int misijaId = misijaComboBox.getValue().getMisijaId();
             int tipId = tipComboBox.getValue().getTipId();
             int raketaId = raketaComboBox.getValue().getRaketaId();
             int mjestoId = mjestoComboBox.getValue().getMjestoId();
 
-            // Kreiranje LocalDateTime objekta iz ComboBox-ova
             LocalDate datum = LocalDate.of(godinaComboBox.getValue(), mjesecComboBox.getValue(), danComboBox.getValue());
             LocalTime vrijeme = LocalTime.of(satComboBox.getValue(), minutComboBox.getValue());
             LocalDateTime vrijemeLansiranja = LocalDateTime.of(datum, vrijeme);
@@ -328,8 +321,8 @@ public class SmtsController implements Initializable {
 
     private void resetirajPolja() {
         satelitNazivField.clear();
-        zemljaProizvodnjeField.clear();
         masaKgField.clear();
+        zemljaProizvodnjeComboBox.setValue(null); // KLJUČNA IZMJENA
         misijaComboBox.setValue(null);
         tipComboBox.setValue(null);
         danComboBox.setValue(null);
@@ -341,10 +334,6 @@ public class SmtsController implements Initializable {
         mjestoComboBox.setValue(null);
     }
 
-
-    //
-    // Metode za ostale poglede i funkcionalnosti
-    //
 
     @FXML
     protected void obrisiLansiranje() {
@@ -366,7 +355,6 @@ public class SmtsController implements Initializable {
     @FXML
     protected void showSatelitiOrbite() {
         loadView("/project/smts_app/sateliti-i-orbite.fxml");
-        // Popuni i pripremi sve elemente nakon što se FXML učita
         popuniTabeluSatelitaIOrbite();
         setupSatelitiOrbiteSearchAndFilter();
     }
@@ -386,8 +374,6 @@ public class SmtsController implements Initializable {
         filteredSatelitiOrbiteData = new FilteredList<>(masterSatelitiOrbiteData, p -> true);
 
         satelitOrbitaFilterField.textProperty().addListener((observable, oldValue, newValue) -> applySatelitOrbitaFilters());
-        // Uklonjen listener iz ove metode jer se dodaje u initialize()
-        // sferaComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> applySatelitOrbitaFilters());
 
         SortedList<SatelitOrbita> sortedData = new SortedList<>(filteredSatelitiOrbiteData);
         sortedData.comparatorProperty().bind(satelitiOrbiteTable.comparatorProperty());
@@ -442,7 +428,6 @@ public class SmtsController implements Initializable {
                         prikaziDetaljeAtmosfere(odabraniSatelit.getNazivSatelita(), odabraniSatelit.getVisinaOrbiteKm());
                     } catch (IOException e) {
                         e.printStackTrace();
-                        // Ovdje se može dodati poruka o grešci ako prozor ne uspije da se otvori
                     }
                 }
             }
@@ -631,7 +616,6 @@ public class SmtsController implements Initializable {
             masterMisijeStatusData.addAll(lista);
             misijeStatusTable.setItems(masterMisijeStatusData);
 
-            // Popunjavanje ComboBox-a sa statusima
             ObservableList<String> statuses = FXCollections.observableArrayList();
             statuses.add("Sve misije");
             statuses.add("Aktivna");
@@ -639,12 +623,19 @@ public class SmtsController implements Initializable {
             misijeStatusComboBox.setItems(statuses);
             misijeStatusComboBox.getSelectionModel().selectFirst();
 
-            // Popunjavanje grafikona
             popuniGrafikonMisijeStatusa(masterMisijeStatusData);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void popuniZemljeProizvodnjeComboBox() {
+        List<String> zemlje = Arrays.asList(
+                "SAD", "Rusija", "Kina", "Japan", "Indija", "Evropska unija", "Kanada", "Ujedinjeno Kraljevstvo",
+                "Izrael", "Južna Koreja", "Brazil", "Australija", "Francuska", "Njemačka", "Italija"
+        );
+        zemljaProizvodnjeComboBox.getItems().addAll(zemlje);
     }
 
     private void setupMisijeSearchAndFilter() {
@@ -674,7 +665,6 @@ public class SmtsController implements Initializable {
             return matchesName && matchesStatus;
         });
 
-        // Ažuriraj PieChart na temelju filtriranih podataka
         popuniGrafikonMisijeStatusa(filteredMisijeStatusData);
     }
 
@@ -688,17 +678,13 @@ public class SmtsController implements Initializable {
         misijeStatusChart.setData(pieChartData);
     }
 
-    /**
-     * Prikazuje detalje o odabranom satelitu.
-     * Ova metoda se poziva dvoklikom na red u tabeli.
-     */
+
     protected void prikaziDetaljeSatelita() {
         DetaljiLansiranja odabranoLansiranje = detaljiLansiranjaTable.getSelectionModel().getSelectedItem();
 
         if (odabranoLansiranje != null) {
             try {
-                // Ovdje treba dohvatiti detalje satelita iz baze na osnovu ID-a lansiranja
-                // (Ovaj dio zahtijeva metodu u SatelitDAO)
+
                 SatelitDetalji satelitDetalji = satelitDAO.dohvatiDetaljeSatelitaPoLansiranjuId(odabranoLansiranje.getLansiranjeId());
 
                 if (satelitDetalji != null) {
@@ -718,9 +704,7 @@ public class SmtsController implements Initializable {
         }
     }
 
-    /**
-     * Pomoćna metoda za otvaranje novog prozora s detaljima.
-     */
+
     private void prikaziProzorSDetaljima(SatelitDetalji detalji) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/detalji-satelita.fxml"));
         Parent root = loader.load();
@@ -731,7 +715,7 @@ public class SmtsController implements Initializable {
         Stage stage = new Stage();
         stage.setScene(new Scene(root));
         stage.setTitle("Detalji Satelita");
-        stage.initModality(Modality.APPLICATION_MODAL); // Blokira glavni prozor
+        stage.initModality(Modality.APPLICATION_MODAL);
         stage.showAndWait();
     }
 
@@ -794,17 +778,12 @@ public class SmtsController implements Initializable {
         }
     }
 
-    /**
-     * Postavlja slušatelja za dvoklik na misijeStatusTable
-     * i otvara prozor s detaljima misije.
-     */
     private void setupMisijeStatusTableDoubleClick() {
         misijeStatusTable.setOnMouseClicked(event -> {
             if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
                 MisijaStatus odabranaMisija = misijeStatusTable.getSelectionModel().getSelectedItem();
                 if (odabranaMisija != null) {
                     try {
-                        // Dohvati detalje misije koristeći misijaId
                         MisijaDetalji detalji = misijaDAO.dohvatiDetaljeMisijePoMisijiId(odabranaMisija.getMisijaId());
                         if (detalji != null) {
                             FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/detalji-misije.fxml"));
@@ -841,6 +820,55 @@ public class SmtsController implements Initializable {
                 }
             }
         });
+    }
+
+    private void setupSatelitiOrbiteContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem urediMenuItem = new MenuItem("Uredi");
+        contextMenu.getItems().add(urediMenuItem);
+
+        satelitiOrbiteTable.setContextMenu(contextMenu);
+
+        urediMenuItem.setOnAction(event -> {
+            SatelitOrbita odabraniSatelit = satelitiOrbiteTable.getSelectionModel().getSelectedItem();
+            if (odabraniSatelit != null) {
+                try {
+                    prikaziProzorZaUredjivanjeOrbite(odabraniSatelit);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void prikaziProzorZaUredjivanjeOrbite(SatelitOrbita satelit) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/project/smts_app/uredi-orbitu.fxml"));
+        Parent root = loader.load();
+
+        UrediOrbituController controller = loader.getController();
+        controller.setSatelit(satelit);
+
+        Stage stage = new Stage();
+        stage.setTitle("Postavi novu orbitu");
+        stage.setScene(new Scene(root));
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
+
+        // Nakon zatvaranja prozora, provjerite jesu li podaci ažurirani
+        if (controller.isAzurirano()) {
+            try {
+                double novaVisina = controller.getNovaVisina();
+                double novaInklinacija = controller.getNovaInklinacija();
+
+                // Pozovite DAO metodu za ažuriranje u bazi
+                satelitDAO.azurirajOrbitu(satelit.getSatelitId(), novaVisina, novaInklinacija);
+
+                // Osvježite tabelu u glavnom prozoru
+                popuniTabeluSatelitaIOrbite();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void prikaziDetaljeKomunikacije(KomunikacijaStanicaSatelit komunikacija) throws Exception {
@@ -885,19 +913,13 @@ public class SmtsController implements Initializable {
 
             MisijeVizualizacijaController controller = loader.getController();
 
-            // Nema potrebe za parentController referencom, jer je u novom prozoru
-            // Iako ju možete ostaviti, neće uzrokovati problem.
-            // controller.setParentController(this);
-
-            // Dohvati partnere i proslijedi ih kontroleru za vizualizaciju
             List<MisijaPartner> partneri = misijaDAO.dohvatiMisijeDetaljePartnera();
             controller.prikaziVizualizaciju(partneri);
 
-            // Kreiranje novog prozora (Stage) za vizualizaciju
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Vizualizacija misija i partnera");
-            stage.initModality(Modality.APPLICATION_MODAL); // Opcionalno: blokira glavni prozor
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.show();
 
         } catch (IOException e) {

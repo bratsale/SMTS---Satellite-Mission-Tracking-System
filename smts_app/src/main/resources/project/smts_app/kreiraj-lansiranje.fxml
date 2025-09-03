@@ -19,7 +19,7 @@
     <TextField fx:id="satelitNazivField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
     <Label text="Zemlja proizvodnje:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-    <TextField fx:id="zemljaProizvodnjeField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+    <ComboBox fx:id="zemljaProizvodnjeComboBox" promptText="Odaberi zemlju proizvodnje" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
     <Label text="Masa (kg):" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
     <TextField fx:id="masaKgField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>

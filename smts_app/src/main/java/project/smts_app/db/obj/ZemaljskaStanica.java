@@ -13,7 +13,6 @@ public class ZemaljskaStanica {
         this.zemljaStanice = zemljaStanice;
     }
 
-    // Getteri i setteri
     public int getStanicaId() { return stanicaId; }
     public void setStanicaId(int stanicaId) { this.stanicaId = stanicaId; }
     public String getNaziv() { return naziv; }

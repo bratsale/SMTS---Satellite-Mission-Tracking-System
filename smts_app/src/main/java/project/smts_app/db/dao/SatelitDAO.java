@@ -17,11 +17,6 @@ import java.util.stream.Collectors;
 
 public class SatelitDAO {
 
-    /**
-     * Dohvaća sve satelite iz baze podataka.
-     * @return Lista svih satelita.
-     * @throws SQLException ako dođe do greške s bazom podataka.
-     */
     public List<Satelit> dohvatiSveSatelite() throws SQLException {
         List<Satelit> sateliti = new ArrayList<>();
         String query = "SELECT satelit_id, naziv, zemlja_proizvodnje, masa_kg, misija_id, tip_id FROM Satelit";
@@ -132,25 +127,78 @@ public class SatelitDAO {
 
     public List<SatelitOrbita> dohvatiSveSateliteIOrbite() {
         List<SatelitOrbita> listaSatelita = new ArrayList<>();
-        String query = "SELECT * FROM Sateliti_i_Orbite";
+
+        String query = "SELECT " +
+                "s.satelit_id, s.naziv AS naziv_satelita, ts.naziv_tipa AS tip_satelita, " +
+                "m.naziv AS naziv_misije, o.visina_km AS visina_orbite_km, " +
+                "o.inklinacija_stepeni AS inklinacija_orbite " +
+                "FROM Satelit AS s " +
+                "JOIN Misija AS m ON s.misija_id = m.misija_id " +
+                "JOIN Tip_Satelita AS ts ON s.tip_id = ts.tip_id " +
+                "LEFT JOIN Orbita AS o ON s.satelit_id = o.satelit_id AND o.datum_kraja IS NULL";
 
         try (Connection conn = SmtsConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                int satelitId = rs.getInt("satelit_id");
                 String nazivSatelita = rs.getString("naziv_satelita");
                 String tipSatelita = rs.getString("tip_satelita");
                 String nazivMisije = rs.getString("naziv_misije");
                 double visinaOrbiteKm = rs.getDouble("visina_orbite_km");
                 double inklinacijaOrbite = rs.getDouble("inklinacija_orbite");
 
-                SatelitOrbita satelit = new SatelitOrbita(nazivSatelita, tipSatelita, nazivMisije, visinaOrbiteKm, inklinacijaOrbite);
+                SatelitOrbita satelit = new SatelitOrbita(satelitId, nazivSatelita, tipSatelita, nazivMisije, visinaOrbiteKm, inklinacijaOrbite);
                 listaSatelita.add(satelit);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return listaSatelita;
+    }
+
+    public void azurirajOrbitu(int satelitId, double novaVisina, double novaInklinacija) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = SmtsConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            String sqlZavrsi = "UPDATE Orbita SET datum_kraja = ? WHERE satelit_id = ? AND datum_kraja IS NULL";
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlZavrsi)) {
+                pstmt.setTimestamp(1, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+                pstmt.setInt(2, satelitId);
+                pstmt.executeUpdate();
+            }
+
+            String sqlNova = "INSERT INTO Orbita (satelit_id, visina_km, inklinacija_stepeni, datum_pocetka) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlNova)) {
+                pstmt.setInt(1, satelitId);
+                pstmt.setDouble(2, novaVisina);
+                pstmt.setDouble(3, novaInklinacija);
+                pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

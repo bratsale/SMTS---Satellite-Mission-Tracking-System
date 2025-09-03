@@ -18,8 +18,6 @@ public class SmtsConnection {
      */
     public static Connection getConnection() throws SQLException {
         try {
-            // Učitavanje drajvera (opcionalno za novije JDBC verzije)
-            // Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
             System.err.println("Greška pri uspostavljanju konekcije sa bazom: " + e.getMessage());

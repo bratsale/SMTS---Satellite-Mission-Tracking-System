@@ -41,13 +41,11 @@ public class KreirajPorukuController {
             sviSateliti = satelitDAO.dohvatiSveSatelite();
             sveStanice = stanicaDAO.dohvatiSveStanice();
 
-            // Puni ComboBox za pošiljaoca sa satelitima i stanicama
             ObservableList<String> posiljaoci = FXCollections.observableArrayList();
             sviSateliti.forEach(s -> posiljaoci.add("Satelit: " + s.getNaziv()));
             sveStanice.forEach(s -> posiljaoci.add("Stanica: " + s.getNaziv()));
             posiljalacComboBox.setItems(posiljaoci);
 
-            // Puni ComboBox za tipove poruka
             tipPorukeComboBox.setItems(FXCollections.observableArrayList(
                     "Telemetry", "Scientific Data", "Health Check", "Orbital Maneuver Command", "Software Update"
             ));
@@ -63,10 +61,8 @@ public class KreirajPorukuController {
         ObservableList<String> primaoci = FXCollections.observableArrayList();
         if (odabir != null) {
             if (odabir.startsWith("Satelit:")) {
-                // Ako je pošiljalac satelit, primalac može biti samo stanica
                 sveStanice.forEach(s -> primaoci.add("Stanica: " + s.getNaziv()));
             } else {
-                // Ako je pošiljalac stanica, primalac može biti samo satelit
                 sviSateliti.forEach(s -> primaoci.add("Satelit: " + s.getNaziv()));
             }
         }
@@ -90,7 +86,6 @@ public class KreirajPorukuController {
             int satelitId = -1;
             int stanicaId = -1;
 
-            // Određivanje satelit_id i stanica_id na temelju odabira
             String[] posiljalacParts = odabranPosiljalac.split(": ");
             String[] primalacParts = odabranPrimalac.split(": ");
 
@@ -101,7 +96,7 @@ public class KreirajPorukuController {
                 stanicaId = sveStanice.stream()
                         .filter(s -> s.getNaziv().equals(primalacParts[1]))
                         .findFirst().map(ZemaljskaStanica::getStanicaId).orElse(-1);
-            } else { // Pošiljalac je Stanica
+            } else {
                 stanicaId = sveStanice.stream()
                         .filter(s -> s.getNaziv().equals(posiljalacParts[1]))
                         .findFirst().map(ZemaljskaStanica::getStanicaId).orElse(-1);

@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import project.smts_app.db.obj.*;
 
-import javafx.event.ActionEvent; // ISPRAVAN IMPORT
+import javafx.event.ActionEvent;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +42,9 @@ public class MisijeVizualizacijaController implements Initializable {
     public void prikaziVizualizaciju(List<MisijaPartner> partneri) {
         this.sviPartneri = partneri;
 
-        // Grupisanje partnera po ulogama i brojanje
         Map<String, Long> brojPartneraPoUlogama = partneri.stream()
                 .collect(Collectors.groupingBy(MisijaPartner::getUlogaOperatera, Collectors.counting()));
 
-        // Kreiranje podataka za PieChart s ispravnim nazivima
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
         brojPartneraPoUlogama.forEach((uloga, count) -> {
             pieChartData.add(new PieChart.Data(uloga + " (" + count + ")", count));
@@ -54,15 +52,13 @@ public class MisijeVizualizacijaController implements Initializable {
         ulogePieChart.setData(pieChartData);
         ulogePieChart.setTitle("Udio uloga partnera");
 
-        // Omogućavanje interakcije s PieChart-om
         ulogePieChart.getData().forEach(data -> {
             data.getNode().setOnMouseClicked(event -> {
-                String uloga = data.getName().substring(0, data.getName().indexOf(" (")); // Dohvati naziv prije zagrade
+                String uloga = data.getName().substring(0, data.getName().indexOf(" ("));
                 filtrirajTabeluPoUlozi(uloga);
             });
         });
 
-        // Inicijalno prikaži sve partnere u tabeli
         detaljiMisijaTable.setItems(FXCollections.observableArrayList(sviPartneri));
     }
 
