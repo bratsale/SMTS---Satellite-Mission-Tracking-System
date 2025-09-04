@@ -33,6 +33,19 @@ JOIN Uloga_Operatera AS u ON uc.uloga_id = u.uloga_id;
 
 SELECT * FROM Misije_Detalji_Partnera;
 
+-- Pogled za prikaz broja misija po svakoj zemlji
+CREATE OR REPLACE VIEW Misije_Po_Zemlji AS
+SELECT
+    m.status,
+    z.naziv_zemlje AS zemlja,
+    COUNT(DISTINCT m.misija_id) AS broj_misija
+FROM Misija AS m
+JOIN Zemlja_u_Misiji AS zum ON m.misija_id = zum.misija_id
+JOIN Zemlja AS z ON zum.zemlja_id = z.zemlja_id
+GROUP BY m.status, z.naziv_zemlje;
+
+SELECT * FROM Misije_Po_Zemlji;
+
 -- Pogled koji pruza pregled satelita, njihovog tipa, misije i trenutnih karakteristika orbite
 CREATE OR REPLACE VIEW Sateliti_i_Orbite AS
 SELECT
@@ -47,17 +60,21 @@ JOIN Tip_Satelita AS ts ON s.tip_id = ts.tip_id
 LEFT JOIN Orbita AS o ON s.satelit_id = o.satelit_id AND o.datum_kraja IS NULL; -- Left join da dohvati sve satelite (jer neki sateliti mozda nemaju postavljenu trenutnu orbitu), takodje AND o.datum_kraja IS NULL -> osigurava da je uslov spajanja orbite i satelita samo ako orbita postoji
 
 -- Pogled koji nam daje uvid u to koje zemaljske stanice komuniciraju s kojim satelitima, kao i o tipu komunikacije
-CREATE OR REPLACE VIEW Komunikacija_Stanica_Satelit AS
+CREATE VIEW Komunikacija_Stanica_Satelit AS
 SELECT
+    k.komunikacija_id,  -- Dodajte ovu liniju
     zs.naziv AS naziv_stanice,
     zs.lokacija AS lokacija_stanice,
     s.naziv AS naziv_satelita,
     k.datum_komunikacije,
     k.tip_komunikacije,
     k.sadrzaj_poruke
-FROM Komunikacija AS k
-JOIN Zemaljska_Stanica AS zs ON k.stanica_id = zs.stanica_id
-JOIN Satelit AS s ON k.satelit_id = s.satelit_id;
+FROM
+    Komunikacija k
+JOIN
+    Zemaljska_Stanica zs ON k.stanica_id = zs.stanica_id
+JOIN
+    Satelit s ON k.satelit_id = s.satelit_id;
 
 -- Pogled koji nam pruza statistiku o broju lansiranja nekog proizvodjaca raketa nosaca
 CREATE OR REPLACE VIEW Lansiranja_Po_Proizvodjacu AS
@@ -142,7 +159,7 @@ END $$
 
 DELIMITER ;
 
-CALL KreirajNovoLansiranje(
+/*CALL KreirajNovoLansiranje(
     'Satelit-5',      -- p_naziv_satelita
     'Evropska unija', -- p_zemlja_proizvodnje
     4500.00,          -- p_masa_kg
@@ -155,7 +172,7 @@ CALL KreirajNovoLansiranje(
 
 SELECT * FROM Satelit;
 SELECT * FROM Lansiranje;
-SELECT * FROM Detalji_Lansiranja;
+SELECT * FROM Detalji_Lansiranja; */
 
 -- Trigger za azuriranje broja satelita u misiji
 DELIMITER $$
@@ -174,7 +191,7 @@ DELIMITER ;
 SELECT * FROM Misija; -- Test
 
 -- Unos novog satelita u misiju 'Starlink 1' (misija_id = 3)
-CALL KreirajNovoLansiranje(
+/*CALL KreirajNovoLansiranje(
     'Starlink-100',      -- p_naziv_satelita
     'SAD',              -- p_zemlja_proizvodnje
     260.00,             -- p_masa_kg
@@ -183,4 +200,30 @@ CALL KreirajNovoLansiranje(
     '2026-01-15 10:00:00', -- p_vrijeme_lansiranja
     1,                  -- p_raketa_id
     1                   -- p_mjesto_id
-);
+); */
+
+
+-- Trigger za azuriranje statusa misije pri unosu novog lansiranja
+DELIMITER $$
+
+CREATE TRIGGER nakon_lansiranja_azuriraj_status
+AFTER INSERT ON Lansiranje
+FOR EACH ROW
+BEGIN
+    UPDATE Misija
+    SET status = 'Aktivna'
+    WHERE misija_id = NEW.misija_id AND status = 'Planirana';
+END$$
+
+DELIMITER ;
+
+-- test unosi: azuriranj statusa misije na planirana, zatim kreiranje novog lansiranja da vidimo da li se automatski postavlja na aktivna
+
+/*UPDATE Misija SET status = 'Planirana' WHERE misija_id = 30;
+
+SELECT * FROM Misija WHERE misija_id = 30;
+
+INSERT INTO Lansiranje (vrijeme_lansiranja, raketa_id, misija_id, satelit_id, mjesto_id)
+VALUES ('2025-09-03 10:30:00', 1, 30, 1, 1);
+
+SELECT * FROM Misija WHERE misija_id = 30; */

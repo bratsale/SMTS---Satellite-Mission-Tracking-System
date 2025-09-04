@@ -22,17 +22,17 @@
                 <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS" />
             </columnConstraints>
 
-            <Button text="Kreiraj Lansiranje" onAction="#showKreirajLansiranje" GridPane.columnIndex="0" GridPane.rowIndex="0" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
-            <Button text="Detalji Lansiranja" onAction="#showDetaljiLansiranja" GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
+            <Button text="Kreiraj Lansiranje" onAction="#showKreirajLansiranje" GridPane.columnIndex="0" GridPane.rowIndex="0" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
+            <Button text="Detalji Lansiranja" onAction="#showDetaljiLansiranja" GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
 
-            <Button text="Trenutne Orbita Satelita" onAction="#showSatelitiOrbite" GridPane.columnIndex="0" GridPane.rowIndex="1" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
-            <Button text="Sateliti" onAction="#showSviSatelitiDetalji" GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
+            <Button text="Trenutne Orbita Satelita" onAction="#showSatelitiOrbite" GridPane.columnIndex="0" GridPane.rowIndex="1" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
+            <Button text="Sateliti" onAction="#showSviSatelitiDetalji" GridPane.columnIndex="1" GridPane.rowIndex="1" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
 
-            <Button text="Partneri misija" onAction="#showMisijePartneri" GridPane.columnIndex="0" GridPane.rowIndex="2" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
-            <Button text="Komunikacija Stanica i Satelita" onAction="#showKomunikacija" GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
+            <Button text="Partneri misija" onAction="#showMisijePartneri" GridPane.columnIndex="0" GridPane.rowIndex="2" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
+            <Button text="Komunikacija Stanica i Satelita" onAction="#showKomunikacija" GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
 
-            <Button text="Pregled Lansiranja po Proizvođaču" onAction="#showLansiranjaPoProizvodjacu" GridPane.columnIndex="0" GridPane.rowIndex="3" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
-            <Button text="Pregled Misija po Statusu" onAction="#showMisijePoStatusu" GridPane.columnIndex="1" GridPane.rowIndex="3" maxWidth="Infinity" style="-fx-pref-height: 80;"/>
+            <Button text="Pregled Lansiranja po Proizvođaču" onAction="#showLansiranjaPoProizvodjacu" GridPane.columnIndex="0" GridPane.rowIndex="3" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
+            <Button text="Pregled Misija po Statusu" onAction="#showMisijePoStatusu" GridPane.columnIndex="1" GridPane.rowIndex="3" maxWidth="Infinity" style="-fx-pref-height: 95;"/>
         </GridPane>
     </children>
 </VBox>

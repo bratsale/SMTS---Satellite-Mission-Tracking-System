@@ -16,7 +16,7 @@ public class KomunikacijaDAO {
 
     public List<KomunikacijaStanicaSatelit> dohvatiDetaljeKomunikacije() {
         List<KomunikacijaStanicaSatelit> listaKomunikacija = new ArrayList<>();
-        String query = "SELECT * FROM Komunikacija_Stanica_Satelit";
+        String query = "SELECT * FROM Komunikacija_Stanica_Satelit ORDER BY datum_komunikacije DESC, komunikacija_id DESC";
 
         try (Connection conn = SmtsConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);

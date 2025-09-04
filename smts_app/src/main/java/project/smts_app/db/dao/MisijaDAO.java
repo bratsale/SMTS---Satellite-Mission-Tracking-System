@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MisijaDAO {
 
@@ -123,5 +125,24 @@ public class MisijaDAO {
             }
         }
         return null;
+    }
+
+    public Map<String, Long> dohvatiBrojMisijaPoZemlji(String status) {
+        Map<String, Long> misijePoZemlji = new HashMap<>();
+        String query = "SELECT zemlja, broj_misija FROM Misije_Po_Zemlji WHERE status = ?";
+        try (Connection conn = SmtsConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String zemlja = rs.getString("zemlja");
+                    long brojMisija = rs.getLong("broj_misija");
+                    misijePoZemlji.put(zemlja, brojMisija);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return misijePoZemlji;
     }
 }

@@ -116,6 +116,8 @@ public class SmtsController implements Initializable {
     private TextField satelitOrbitaFilterField;
     @FXML
     private ComboBox<String> sferaComboBox;
+    @FXML
+    private Label misijeChartTitleLabel;
 
     // Instance DAO klase
     private final LansiranjeDAO lansiranjeDAO = new LansiranjeDAO();
@@ -520,7 +522,7 @@ public class SmtsController implements Initializable {
     protected void showKomunikacija() {
         loadView("/project/smts_app/komunikacija.fxml");
         popuniTabeluKomunikacija();
-        setupKomunikacijaTableDoubleClick(); // Dodajte ovu liniju
+        setupKomunikacijaTableDoubleClick();
     }
 
     private void popuniTabeluKomunikacija() {
@@ -602,10 +604,8 @@ public class SmtsController implements Initializable {
     @FXML
     protected void showMisijePoStatusu() {
         loadView("/project/smts_app/misije-po-statusu.fxml");
-        // Popuni i pripremi sve elemente nakon što se FXML učita
         popuniMisijeTabeleIGrafikone();
         setupMisijeSearchAndFilter();
-        // Dodaj listener za dvoklik
         setupMisijeStatusTableDoubleClick();
     }
 
@@ -614,20 +614,62 @@ public class SmtsController implements Initializable {
             List<MisijaStatus> lista = misijaDAO.dohvatiMisijePoStatusu();
             masterMisijeStatusData.clear();
             masterMisijeStatusData.addAll(lista);
-            misijeStatusTable.setItems(masterMisijeStatusData);
+
+            filteredMisijeStatusData = new FilteredList<>(masterMisijeStatusData, p -> true);
+            misijeStatusTable.setItems(filteredMisijeStatusData);
 
             ObservableList<String> statuses = FXCollections.observableArrayList();
             statuses.add("Sve misije");
             statuses.add("Aktivna");
             statuses.add("Završena");
             misijeStatusComboBox.setItems(statuses);
-            misijeStatusComboBox.getSelectionModel().selectFirst();
 
-            popuniGrafikonMisijeStatusa(masterMisijeStatusData);
+            misijeStatusComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    if (newVal.equals("Sve misije")) {
+                        filteredMisijeStatusData.setPredicate(p -> true);
+                        popuniGrafikonMisijeStatusa(masterMisijeStatusData);
+                    } else {
+                        filteredMisijeStatusData.setPredicate(p -> p.getStatus().equals(newVal));
+                        popuniGrafikonMisijaPoZemlji(newVal);
+                    }
+                }
+            });
+
+            misijeStatusComboBox.getSelectionModel().selectFirst();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void filtrirajMisijePoStatusu(String status) {
+        if (status.equals("Sve misije")) {
+            filteredMisijeStatusData.setPredicate(p -> true);
+            popuniGrafikonMisijeStatusa(masterMisijeStatusData);
+        } else {
+            filteredMisijeStatusData.setPredicate(p -> p.getStatus().equals(status));
+            popuniGrafikonMisijeStatusa(filteredMisijeStatusData);
+        }
+        misijeStatusTable.setItems(filteredMisijeStatusData);
+
+        if (status.equals("Aktivna")) {
+            popuniGrafikonMisijaPoZemlji("Aktivna");
+        } else if (status.equals("Završena")) {
+            popuniGrafikonMisijaPoZemlji("Završena");
+        }
+    }
+
+    private void popuniGrafikonMisijaPoZemlji(String status) {
+        Map<String, Long> misijePoZemlji = misijaDAO.dohvatiBrojMisijaPoZemlji(status);
+
+        ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
+        misijePoZemlji.forEach((zemlja, broj) -> {
+            chartData.add(new PieChart.Data(zemlja + " (" + broj + ")", broj));
+        });
+
+        misijeStatusChart.setData(chartData);
+        misijeStatusChart.setTitle("Misije po zemlji (" + status + ")");
     }
 
     private void popuniZemljeProizvodnjeComboBox() {
@@ -669,13 +711,15 @@ public class SmtsController implements Initializable {
     }
 
     private void popuniGrafikonMisijeStatusa(ObservableList<MisijaStatus> data) {
-        Map<String, Long> statusCount = data.stream()
-                .collect(Collectors.groupingBy(MisijaStatus::getStatus, Collectors.counting()));
-        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-        for (Map.Entry<String, Long> entry : statusCount.entrySet()) {
-            pieChartData.add(new PieChart.Data(entry.getKey() + " (" + entry.getValue() + ")", entry.getValue()));
-        }
-        misijeStatusChart.setData(pieChartData);
+        long aktivne = data.stream().filter(m -> m.getStatus().equals("Aktivna")).count();
+        long zavrsene = data.stream().filter(m -> m.getStatus().equals("Završena")).count();
+
+        ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
+        chartData.add(new PieChart.Data("Aktivna (" + aktivne + ")", aktivne));
+        chartData.add(new PieChart.Data("Završena (" + zavrsene + ")", zavrsene));
+
+        misijeStatusChart.setData(chartData);
+        misijeStatusChart.setTitle("Procentualni status misija");
     }
 
 
@@ -688,7 +732,6 @@ public class SmtsController implements Initializable {
                 SatelitDetalji satelitDetalji = satelitDAO.dohvatiDetaljeSatelitaPoLansiranjuId(odabranoLansiranje.getLansiranjeId());
 
                 if (satelitDetalji != null) {
-                    // Pozivamo pomoćnu metodu koja otvara novi prozor
                     prikaziProzorSDetaljima(satelitDetalji);
                 } else {
                     System.out.println("Detalji satelita nisu pronađeni.");
@@ -854,16 +897,13 @@ public class SmtsController implements Initializable {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.showAndWait();
 
-        // Nakon zatvaranja prozora, provjerite jesu li podaci ažurirani
         if (controller.isAzurirano()) {
             try {
                 double novaVisina = controller.getNovaVisina();
                 double novaInklinacija = controller.getNovaInklinacija();
 
-                // Pozovite DAO metodu za ažuriranje u bazi
                 satelitDAO.azurirajOrbitu(satelit.getSatelitId(), novaVisina, novaInklinacija);
 
-                // Osvježite tabelu u glavnom prozoru
                 popuniTabeluSatelitaIOrbite();
             } catch (SQLException e) {
                 e.printStackTrace();

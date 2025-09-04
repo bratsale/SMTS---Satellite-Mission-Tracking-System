@@ -8,8 +8,8 @@ public class SmtsConnection {
 
     // Podaci za konekciju
     private static final String URL = "jdbc:mysql://localhost:3306/smts_baza";
-    private static final String USER = "smts"; // Ažuriraj sa svojim korisničkim imenom
-    private static final String PASSWORD = "smts"; // Ažuriraj sa svojom lozinkom
+    private static final String USER = "smts";
+    private static final String PASSWORD = "smts";
 
     /**
      * Vraća uspostavljenu konekciju sa bazom podataka.
